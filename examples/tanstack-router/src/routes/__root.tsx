@@ -1,29 +1,9 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
-
-import '../styles.css'
+import { createRootRoute } from '@tanstack/react-router'
+import { ShellView } from '../views/shell/shell.view'
+import { NotFoundView, RouteErrorView } from '../views/shell/route-status.view'
 
 export const Route = createRootRoute({
-  component: RootComponent,
+  component: ShellView,
+  notFoundComponent: NotFoundView,
+  errorComponent: RouteErrorView,
 })
-
-function RootComponent() {
-  return (
-    <>
-      <Outlet />
-      <TanStackDevtools
-        config={{
-          position: 'bottom-right',
-        }}
-        plugins={[
-          {
-            name: 'TanStack Router',
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-        ]}
-      />
-    </>
-  )
-}

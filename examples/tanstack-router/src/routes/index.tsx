@@ -1,14 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { TodoListView } from '../views/todo-list/todo-list.view'
+import { parseTodoSearch } from '../utils/todo-search'
 
-export const Route = createFileRoute('/')({ component: Home })
-
-function Home() {
-  return (
-    <div className="p-8">
-      <h1 className="text-4xl font-bold">Welcome to TanStack Start</h1>
-      <p className="mt-4 text-lg">
-        Edit <code>src/routes/index.tsx</code> to get started.
-      </p>
-    </div>
-  )
-}
+export const Route = createFileRoute('/')({
+  validateSearch: parseTodoSearch,
+  component: TodoListView,
+})

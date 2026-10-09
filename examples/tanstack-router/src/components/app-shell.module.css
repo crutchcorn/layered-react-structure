@@ -1,0 +1,246 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 242px minmax(0, 1fr);
+}
+.skip-link {
+  position: fixed;
+  top: -80px;
+  left: 20px;
+  z-index: 10;
+  padding: 12px 18px;
+  background: var(--forest);
+  color: white;
+  border-radius: 8px;
+}
+.skip-link:focus {
+  top: 16px;
+}
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: #f4f5ef;
+  display: flex;
+  flex-direction: column;
+  padding: 36px 24px 26px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #20392e;
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -1.5px;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 35px;
+  border-radius: 10px;
+  background: var(--forest);
+  color: #f6f5eb;
+  transform: rotate(-5deg);
+}
+.brand-period {
+  color: #626f5c;
+}
+.workspace-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.35px;
+  color: #626f5c;
+  margin-top: 17px;
+}
+.primary-navigation {
+  display: grid;
+  gap: 7px;
+  margin-top: 43px;
+}
+.navigation-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  color: #626f5c;
+}
+.navigation-item svg {
+  position: absolute;
+  left: 14px;
+  pointer-events: none;
+}
+.navigation-item a {
+  display: block;
+  width: 100%;
+  padding: 12px 14px 12px 46px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: inherit;
+}
+.navigation-item:has(a[aria-current='page']) {
+  color: var(--forest);
+  background: #e4eadd;
+}
+.navigation-item a:hover {
+  background: #e8ece2;
+}
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 64px;
+}
+.sidebar-note {
+  padding: 21px 17px;
+  border: 1px solid #dfe4d6;
+  border-radius: 10px;
+  color: #626f5c;
+  background: #edf0e6;
+}
+.sidebar-note p {
+  margin: 13px 0 0;
+  font-size: 12px;
+  line-height: 1.75;
+}
+.local-storage-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 25px 0 8px;
+  color: #626f5c;
+  font-size: 11px;
+}
+.storage-explanation {
+  font-size: 11px;
+  line-height: 1.65;
+  color: #626f5c;
+  margin: 0;
+  max-width: 175px;
+}
+.main-area {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.workspace-header {
+  height: 77px;
+  padding: 0 51px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.15px;
+}
+.workspace-label-private {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.workspace-label-private > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8a9c74;
+}
+.page-content {
+  width: 100%;
+  max-width: 1170px;
+  margin: 0 auto;
+  padding: 47px 51px 60px;
+  outline: none;
+  flex: 1;
+}
+.workspace-footer {
+  padding: 0 51px 26px;
+  font-size: 11px;
+  color: #626f5c;
+}
+.persistence-warning {
+  margin: 20px 51px 0;
+  padding: 13px 16px;
+  border: 1px solid #e6cb91;
+  background: #fff7e5;
+  border-radius: 8px;
+  color: #795921;
+  font-size: 13px;
+}
+@media (min-width: 1500px) {
+  .page-content {
+    padding-top: 62px;
+  }
+}
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 204px minmax(0, 1fr);
+  }
+  .sidebar {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .workspace-header {
+    padding: 0 30px;
+  }
+  .page-content {
+    padding: 36px 30px 48px;
+  }
+  .workspace-footer {
+    padding-left: 30px;
+  }
+}
+@media (max-width: 680px) {
+  .app-shell {
+    display: block;
+  }
+  .sidebar {
+    padding: 20px 21px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 17px;
+  }
+  .brand {
+    font-size: 25px;
+  }
+  .brand-mark {
+    width: 29px;
+    height: 30px;
+  }
+  .workspace-label,
+  .sidebar-bottom {
+    display: none;
+  }
+  .primary-navigation {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 14px;
+  }
+  .navigation-item a {
+    font-size: 11px;
+    padding: 10px 11px 10px 32px;
+  }
+  .navigation-item svg {
+    left: 9px;
+    width: 16px;
+    height: 16px;
+  }
+  .brand {
+    margin-bottom: 14px;
+  }
+  .workspace-header {
+    height: 49px;
+    padding: 0 22px;
+    font-size: 11px;
+  }
+  .page-content {
+    padding: 30px 21px 40px;
+  }
+  .workspace-footer {
+    padding: 0 22px 23px;
+  }
+  .persistence-warning {
+    margin: 16px 21px 0;
+  }
+}
