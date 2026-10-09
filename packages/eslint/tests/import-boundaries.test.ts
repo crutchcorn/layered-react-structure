@@ -1,8 +1,7 @@
-import assert from 'node:assert/strict'
 import { Linter, RuleTester } from 'eslint'
 import tseslint from 'typescript-eslint'
 import plugin from 'lrs-eslint-plugin'
-import { describe, it, test } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 
 RuleTester.describe = describe
 RuleTester.it = it
@@ -189,8 +188,8 @@ test('JavaScript consumers can use the default ESLint parser', () => {
     ],
     { filename: 'src/views/chat/chat.ui.jsx' },
   )
-  assert.equal(messages.length, 1)
-  assert.equal(messages[0]?.ruleId, 'lrs/presentation-imports')
+  expect(messages).toHaveLength(1)
+  expect(messages[0]?.ruleId).toBe('lrs/presentation-imports')
 })
 
 test('recommended configuration scopes both layers without replacing application restrictions', () => {
@@ -210,13 +209,13 @@ test('recommended configuration scopes both layers without replacing application
     config,
     { filename: 'src/views/chat/chat.ui.tsx' },
   )
-  assert.deepEqual(messages.map((message) => message.ruleId).sort(), [
+  expect(messages.map((message) => message.ruleId).sort()).toEqual([
     'lrs/presentation-imports',
     'no-restricted-imports',
   ])
   for (const entry of plugin.configs.recommended) {
-    assert.ok(entry.rules)
-    assert.equal(Object.hasOwn(entry.rules, 'no-restricted-imports'), false)
+    expect(entry.rules).toBeDefined()
+    expect(entry.rules).not.toHaveProperty('no-restricted-imports')
   }
 })
 
@@ -231,8 +230,8 @@ for (const filename of [
       [baseConfig, ...plugin.configs.recommended],
       { filename },
     )
-    assert.equal(messages.length, 1)
-    assert.equal(messages[0]?.ruleId, 'lrs/presentation-imports')
+    expect(messages).toHaveLength(1)
+    expect(messages[0]?.ruleId).toBe('lrs/presentation-imports')
   })
 }
 
@@ -245,8 +244,8 @@ for (const extension of sourceExtensions) {
         [baseConfig, ...plugin.configs.recommended],
         { filename },
       )
-      assert.equal(messages.length, 1)
-      assert.equal(messages[0]?.ruleId, 'lrs/service-imports')
+      expect(messages).toHaveLength(1)
+      expect(messages[0]?.ruleId).toBe('lrs/service-imports')
     })
   }
 }
@@ -262,6 +261,6 @@ for (const filename of [
       [baseConfig, ...plugin.configs.recommended],
       { filename },
     )
-    assert.deepEqual(messages, [])
+    expect(messages).toEqual([])
   })
 }

@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import {
   copyFileSync,
@@ -15,7 +14,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
-import { test } from 'vitest'
+import { expect, test } from 'vitest'
 
 const require = createRequire(import.meta.url)
 const packageDirectory = fileURLToPath(new URL('..', import.meta.url))
@@ -44,7 +43,7 @@ function run(command: string, args: string[], cwd: string): string {
       error instanceof Error && 'stdout' in error ? error.stdout : ''
     const stderr =
       error instanceof Error && 'stderr' in error ? error.stderr : ''
-    assert.fail(
+    expect.unreachable(
       `${command} ${args.join(' ')}\n${String(error)}\n${stdout}\n${stderr}`,
     )
   }
@@ -73,13 +72,13 @@ test('published tarball supports ESM and strict TypeScript consumers', (context)
       packageDirectory,
     ),
   )
-  assert.ok(packed)
+  if (!packed) expect.unreachable('npm pack must produce a package')
   const contents = packed.files.map((file) => file.path)
   for (const expected of ['dist/index.js', 'dist/index.d.ts', 'README.md']) {
-    assert.ok(contents.includes(expected), `Missing package file: ${expected}`)
+    expect(contents, `Missing package file: ${expected}`).toContain(expected)
   }
-  assert.ok(!contents.some((file) => file.startsWith('src/')))
-  assert.ok(!contents.some((file) => file.startsWith('tests/')))
+  expect(contents).not.toContainEqual(expect.stringMatching(/^src\//))
+  expect(contents).not.toContainEqual(expect.stringMatching(/^tests\//))
 
   const consumerDirectory = path.join(directory, 'consumer')
   const modulesDirectory = path.join(consumerDirectory, 'node_modules')
@@ -99,7 +98,7 @@ test('published tarball supports ESM and strict TypeScript consumers', (context)
   const manifest: PackageManifest = JSON.parse(
     readFileSync(path.join(installedDirectory, 'package.json'), 'utf8'),
   )
-  assert.ok(existsSync(path.join(installedDirectory, manifest.types)))
+  expect(existsSync(path.join(installedDirectory, manifest.types))).toBe(true)
 
   // Reuse installed runtime dependencies, but expose no workspace devDependencies.
   for (const dependency of Object.keys({
@@ -126,7 +125,12 @@ test('published tarball supports ESM and strict TypeScript consumers', (context)
     )
   }
 
-  run(process.execPath, ['consumer.js'], consumerDirectory)
+  expect(
+    JSON.parse(run(process.execPath, ['consumer.js'], consumerDirectory)),
+  ).toEqual({
+    importRuleIds: ['lrs/service-imports'],
+    structureRuleIds: ['project-structure/folder-structure'],
+  })
 
   for (const module of ['NodeNext', 'Preserve']) {
     writeFileSync(

@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict'
 import process from 'node:process'
 import { ESLint } from 'eslint'
 import { defineConfig } from 'eslint/config'
@@ -11,10 +10,6 @@ const eslint = new ESLint({
 const [result] = await eslint.lintText("import React from 'react'", {
   filePath: 'src/services/request.js',
 })
-assert.deepEqual(
-  result.messages.map((message) => message.ruleId),
-  ['lrs/service-imports'],
-)
 
 // The combined configuration also loads the structure checker's runtime dependency.
 const combined = new ESLint({
@@ -24,7 +19,13 @@ const combined = new ESLint({
 const [structureResult] = await combined.lintText('export const value = 1', {
   filePath: 'src/data/invalid.js',
 })
-assert.deepEqual(
-  structureResult.messages.map((message) => message.ruleId),
-  ['project-structure/folder-structure'],
+// Return observations so Vitest can assert them without adding a test dependency
+// to this isolated downstream consumer.
+process.stdout.write(
+  JSON.stringify({
+    importRuleIds: result?.messages.map((message) => message.ruleId),
+    structureRuleIds: structureResult?.messages.map(
+      (message) => message.ruleId,
+    ),
+  }),
 )

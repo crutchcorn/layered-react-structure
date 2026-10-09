@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict'
 import {
   existsSync,
   mkdirSync,
@@ -11,7 +10,7 @@ import path from 'node:path'
 import { ESLint } from 'eslint'
 import type { Linter } from 'eslint'
 import tseslint from 'typescript-eslint'
-import { test } from 'vitest'
+import { expect, test } from 'vitest'
 import type { TestContext } from 'vitest'
 import { createLrsConfig } from 'lrs-eslint-plugin'
 
@@ -54,7 +53,7 @@ function createFixture(
       const [result] = await eslint.lintText(code, {
         filePath: path.join(root, filename),
       })
-      assert.ok(result, 'The candidate file must be selected for linting')
+      expect.assert(result, 'The candidate file must be selected for linting')
       return result
     },
     write(filename: string, contents: string) {
@@ -106,7 +105,7 @@ for (const filename of [
 ]) {
   test(`structure accepts ${filename}`, async (context) => {
     const result = await createFixture(context).lint(filename)
-    assert.deepEqual(result.messages, [])
+    expect(result.messages).toEqual([])
   })
 }
 
@@ -144,23 +143,22 @@ for (const filename of [
 ]) {
   test(`structure rejects ${filename}`, async (context) => {
     const result = await createFixture(context).lint(filename)
-    assert.equal(result.messages.length, 1)
-    const [message] = result.messages
-    assert.ok(message)
-    assert.equal(message.ruleId, structureRule)
-    assert.equal(message.severity, 2)
+    expect(result.messages).toHaveLength(1)
+    expect(result.messages[0]).toMatchObject({
+      ruleId: structureRule,
+      severity: 2,
+    })
   })
 }
 
 test('absolute project root works when ESLint runs from its parent directory', async (context) => {
   const fixture = createFixture(context, { outsideCwd: true })
-  assert.deepEqual(
+  expect(
     (await fixture.lint('src/views/search-results/search-results.view.tsx'))
       .messages,
-    [],
-  )
+  ).toEqual([])
   const invalid = await fixture.lint('src/views/search-results/data/results.ts')
-  assert.equal(invalid.messages[0]?.ruleId, structureRule)
+  expect(invalid.messages[0]?.ruleId).toBe(structureRule)
 })
 
 test('separate ESLint instances report every file in the same invalid folder', async (context) => {
@@ -168,13 +166,12 @@ test('separate ESLint instances report every file in the same invalid folder', a
   const first = fixture.write('src/data/first.ts', 'export const first = 1')
   const second = fixture.write('src/data/second.ts', 'export const second = 2')
   const [firstResult] = await fixture.eslint.lintFiles([first])
-  assert.ok(firstResult)
-  assert.deepEqual(
-    firstResult.messages.map((message) => message.ruleId),
-    [structureRule],
-  )
+  expect.assert(firstResult)
+  expect(firstResult.messages.map((message) => message.ruleId)).toEqual([
+    structureRule,
+  ])
   const projectCache = path.join(fixture.root, 'projectStructure.cache.json')
-  assert.equal(existsSync(projectCache), false)
+  expect(existsSync(projectCache)).toBe(false)
 
   // A second invocation must not reuse the first file's folder diagnostic.
   // Both files exist so the upstream cache would retain the first entry.
@@ -190,12 +187,11 @@ test('separate ESLint instances report every file in the same invalid folder', a
     ],
   })
   const [secondResult] = await nextESLint.lintFiles([second])
-  assert.ok(secondResult)
-  assert.deepEqual(
-    secondResult.messages.map((message) => message.ruleId),
-    [structureRule],
-  )
-  assert.equal(existsSync(projectCache), false)
+  expect.assert(secondResult)
+  expect(secondResult.messages.map((message) => message.ruleId)).toEqual([
+    structureRule,
+  ])
+  expect(existsSync(projectCache)).toBe(false)
 })
 
 test('filesystem lint includes CSS, SVG, unknown extensions, and extensionless files', async (context) => {
@@ -216,17 +212,18 @@ test('filesystem lint includes CSS, SVG, unknown extensions, and extensionless f
   }
 
   const results = await fixture.eslint.lintFiles(['src'])
-  assert.equal(results.length, expected.size)
+  expect(results).toHaveLength(expected.size)
   for (const result of results) {
     const filename = path
       .relative(fixture.root, result.filePath)
       .replaceAll(path.sep, '/')
-    assert.ok(expected.has(filename), `Unexpected lint result: ${filename}`)
-    assert.deepEqual(
-      result.messages.map((message) => message.ruleId),
-      expected.get(filename) ? [structureRule] : [],
-      filename,
+    expect(expected.has(filename), `Unexpected lint result: ${filename}`).toBe(
+      true,
     )
+    expect(
+      result.messages.map((message) => message.ruleId),
+      filename,
+    ).toEqual(expected.get(filename) ? [structureRule] : [])
   }
 })
 
@@ -250,7 +247,7 @@ for (const outsideCwd of [false, true]) {
       'src/views/search-results/Results.ui.tsx',
       code,
     )
-    assert.deepEqual(result.messages.map((message) => message.ruleId).sort(), [
+    expect(result.messages.map((message) => message.ruleId).sort()).toEqual([
       'lrs/presentation-imports',
       'no-console',
       structureRule,
@@ -260,10 +257,9 @@ for (const outsideCwd of [false, true]) {
       'src/views/search-results/services/search.ts',
       "import React from 'react';",
     )
-    assert.deepEqual(
-      service.messages.map((message) => message.ruleId),
-      ['lrs/service-imports'],
-    )
+    expect(service.messages.map((message) => message.ruleId)).toEqual([
+      'lrs/service-imports',
+    ])
   })
 }
 
@@ -280,18 +276,19 @@ test('frontend path policy leaves sibling backend and framework files alone', as
         filePath: filename,
       },
     )
-    assert.ok(result)
-    assert.deepEqual(result.messages, [])
+    expect.assert(result)
+    expect(result.messages).toEqual([])
   }
 })
 
 test('structure factory requires an explicit absolute project directory', () => {
   for (const root of ['.', 'apps/frontend', '']) {
-    assert.throws(() => createLrsConfig({ root }), /absolute project directory/)
+    expect(() => createLrsConfig({ root })).toThrow(
+      /absolute project directory/,
+    )
   }
-  assert.throws(
+  expect(
     // @ts-expect-error JavaScript callers can omit the required root value.
     () => createLrsConfig({ root: undefined }),
-    /absolute project directory/,
-  )
+  ).toThrow(/absolute project directory/)
 })
