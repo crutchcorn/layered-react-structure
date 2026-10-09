@@ -39,7 +39,7 @@ Install [`lrs-eslint-plugin` from npm](https://www.npmjs.com/package/lrs-eslint-
 npm install --save-dev lrs-eslint-plugin 'eslint@^10.12.0' typescript-eslint
 ```
 
-Use your project's package manager when adding the dependencies. The plugin is plain ESM JavaScript and needs no build step.
+Use your project's package manager when adding the dependencies. The plugin ships a ready-to-use ESM bundle with TypeScript declarations; consumers need no build step.
 
 Add the import-boundary rules to `eslint.config.mjs` in the application directory containing `src/`:
 

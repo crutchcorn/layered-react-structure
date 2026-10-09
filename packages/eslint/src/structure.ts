@@ -1,9 +1,29 @@
 import path from 'node:path'
+import type { Linter } from 'eslint'
+import type { FolderStructureConfig } from 'eslint-plugin-project-structure'
 import {
   createFolderStructure,
   projectStructureParser,
 } from 'eslint-plugin-project-structure'
 import projectStructurePlugin from './structure-plugin.js'
+
+/** Options for the application file and folder structure policy. */
+export interface StructureConfigOptions {
+  /** Absolute path to the application directory containing `src`. */
+  root: string
+}
+
+type StructureRuleId =
+  | 'modules'
+  | 'services'
+  | 'types'
+  | 'hooks'
+  | 'components'
+  | 'testingUtilities'
+  | 'assets'
+type StructureRule = NonNullable<
+  FolderStructureConfig<StructureRuleId>['rules']
+>[StructureRuleId]
 
 const kebabName = '{kebab-case}'
 const moduleFile = { name: `${kebabName}.ts` }
@@ -13,14 +33,17 @@ const tests = { name: `${kebabName}(.(ui|view))?.(spec|test).(ts|tsx)` }
 const stories = { name: `${kebabName}(.(ui|view))?.stories.tsx` }
 const styles = { name: `${kebabName}(.module)?.(css|scss|sass|less)` }
 
-function recursiveDirectory(ruleId, files) {
+function recursiveDirectory(
+  ruleId: StructureRuleId,
+  files: StructureRule[],
+): StructureRule {
   return {
     name: kebabName,
     children: [...files, { ruleId }],
   }
 }
 
-function layers() {
+function layers(): StructureRule[] {
   return [
     { name: 'components', ruleId: 'components' },
     { name: 'constants', ruleId: 'modules' },
@@ -49,7 +72,7 @@ function layers() {
   ]
 }
 
-function createLrsFolderStructure(root) {
+function createLrsFolderStructure(root: string) {
   return createFolderStructure({
     // An absolute path avoids upstream node_modules-based root discovery.
     projectRoot: root,
@@ -108,7 +131,9 @@ function createLrsFolderStructure(root) {
 }
 
 /** Create the optional TypeScript React application path policy. */
-export function createStructureConfig({ root }) {
+export function createStructureConfig({
+  root,
+}: StructureConfigOptions): Linter.Config[] {
   if (typeof root !== 'string' || !path.isAbsolute(root)) {
     throw new TypeError(
       'LRS structure root must be an absolute project directory',
@@ -135,7 +160,11 @@ export function createStructureConfig({ root }) {
       basePath: root,
       files,
       ignores: ['src/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
-      languageOptions: { parser: projectStructureParser },
+      languageOptions: {
+        // Upstream returns null visitor keys, which ESLint accepts at runtime
+        // but excludes from its parser declaration.
+        parser: projectStructureParser as unknown as Linter.Parser,
+      },
     },
   ]
 }

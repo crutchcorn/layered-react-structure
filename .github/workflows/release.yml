@@ -106,7 +106,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check all packages
+      - name: Build and check packages with Nx, including packed consumers
         run: pnpm test
 
       - name: Pack packages

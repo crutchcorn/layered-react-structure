@@ -43,11 +43,11 @@ jobs:
       - name: Check formatting
         run: pnpm run test:format
 
-      - name: Typecheck all packages
+      - name: Build all packages with Nx
+        run: pnpm run build
+
+      - name: Typecheck source and tests with Nx
         run: pnpm run test:types
 
-      - name: Test all packages
+      - name: Run Vitest and packed-package consumer checks with Nx
         run: pnpm run test:lib
-
-      - name: Build all packages
-        run: pnpm run build

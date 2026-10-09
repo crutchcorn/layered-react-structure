@@ -1,18 +1,36 @@
+import type { ESLint, Linter, Rule } from 'eslint'
+import packageJson from '../package.json' with { type: 'json' }
 import presentationImports from './rules/presentation-imports.js'
 import serviceImports from './rules/service-imports.js'
 import { createStructureConfig } from './structure.js'
+import type { StructureConfigOptions } from './structure.js'
 
-const plugin = {
+export type LrsConfigOptions = StructureConfigOptions
+
+export interface LrsPlugin extends ESLint.Plugin {
+  rules: {
+    'presentation-imports': Rule.RuleModule
+    'service-imports': Rule.RuleModule
+  }
+  configs: {
+    recommended: Linter.Config[]
+  }
+}
+
+const plugin: LrsPlugin = {
   meta: {
-    name: '@demo-proj/lrs-eslint',
+    name: packageJson.name,
     namespace: 'lrs',
-    version: '0.0.0',
+    version: packageJson.version,
   },
   rules: {
-    'presentation-imports': presentationImports,
-    'service-imports': serviceImports,
+    // TypeScript visitors extend ESTree; ESLint's runtime accepts these rules.
+    'presentation-imports': presentationImports as unknown as Rule.RuleModule,
+    'service-imports': serviceImports as unknown as Rule.RuleModule,
   },
-  configs: {},
+  configs: {
+    recommended: [],
+  },
 }
 
 plugin.configs.recommended = [
@@ -33,7 +51,7 @@ plugin.configs.recommended = [
 export default plugin
 
 /** Apply import boundaries and the file layout to one React application. */
-export function createLrsConfig({ root }) {
+export function createLrsConfig({ root }: LrsConfigOptions): Linter.Config[] {
   return [
     ...plugin.configs.recommended.map((config) => ({
       ...config,

@@ -1,6 +1,7 @@
+import type { TSESLint } from '@typescript-eslint/utils'
 import { isComponent, isLayer, visitModuleSources } from '../module-sources.js'
 
-export default {
+const serviceImports: TSESLint.RuleModule<'forbiddenImport', []> = {
   meta: {
     type: 'problem',
     docs: {
@@ -28,3 +29,5 @@ export default {
     )
   },
 }
+
+export default serviceImports

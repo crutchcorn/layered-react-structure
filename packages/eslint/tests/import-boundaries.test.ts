@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict'
-import { describe, it, test } from 'node:test'
 import { Linter, RuleTester } from 'eslint'
 import tseslint from 'typescript-eslint'
-import plugin from '../src/index.js'
+import plugin from 'lrs-eslint-plugin'
+import { describe, it, test } from 'vitest'
 
 RuleTester.describe = describe
 RuleTester.it = it
+RuleTester.itOnly = it.only
 
-const languageOptions = {
+const languageOptions: Linter.LanguageOptions = {
   parser: tseslint.parser,
   ecmaVersion: 'latest',
   sourceType: 'module',
@@ -15,7 +16,7 @@ const languageOptions = {
 }
 const tester = new RuleTester({ languageOptions })
 
-function invalid(code, source) {
+function invalid(code: string, source: string): RuleTester.InvalidTestCase {
   return {
     code,
     errors: [{ messageId: 'forbiddenImport', data: { source } }],
@@ -174,7 +175,7 @@ tester.run('service-imports', plugin.rules['service-imports'], {
   ],
 })
 
-const baseConfig = {
+const baseConfig: Linter.Config = {
   files: ['**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
   languageOptions,
 }
@@ -189,12 +190,12 @@ test('JavaScript consumers can use the default ESLint parser', () => {
     { filename: 'src/views/chat/chat.ui.jsx' },
   )
   assert.equal(messages.length, 1)
-  assert.equal(messages[0].ruleId, 'lrs/presentation-imports')
+  assert.equal(messages[0]?.ruleId, 'lrs/presentation-imports')
 })
 
 test('recommended configuration scopes both layers without replacing application restrictions', () => {
   const linter = new Linter()
-  const config = [
+  const config: Linter.Config[] = [
     baseConfig,
     {
       rules: {
@@ -214,6 +215,7 @@ test('recommended configuration scopes both layers without replacing application
     'no-restricted-imports',
   ])
   for (const entry of plugin.configs.recommended) {
+    assert.ok(entry.rules)
     assert.equal(Object.hasOwn(entry.rules, 'no-restricted-imports'), false)
   }
 })
@@ -230,7 +232,7 @@ for (const filename of [
       { filename },
     )
     assert.equal(messages.length, 1)
-    assert.equal(messages[0].ruleId, 'lrs/presentation-imports')
+    assert.equal(messages[0]?.ruleId, 'lrs/presentation-imports')
   })
 }
 
@@ -244,7 +246,7 @@ for (const extension of sourceExtensions) {
         { filename },
       )
       assert.equal(messages.length, 1)
-      assert.equal(messages[0].ruleId, 'lrs/service-imports')
+      assert.equal(messages[0]?.ruleId, 'lrs/service-imports')
     })
   }
 }

@@ -8,17 +8,29 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { test } from 'node:test'
 import { ESLint } from 'eslint'
+import type { Linter } from 'eslint'
 import tseslint from 'typescript-eslint'
-import { createLrsConfig } from '../src/index.js'
+import { test } from 'vitest'
+import type { TestContext } from 'vitest'
+import { createLrsConfig } from 'lrs-eslint-plugin'
 
 const structureRule = 'project-structure/folder-structure'
 
-function createFixture(context, { outsideCwd = false, additionalConfig } = {}) {
+interface FixtureOptions {
+  outsideCwd?: boolean
+  additionalConfig?: (root: string) => Linter.Config[]
+}
+
+function createFixture(
+  context: TestContext,
+  { outsideCwd = false, additionalConfig }: FixtureOptions = {},
+) {
   // The upstream plugin writes a diagnostic cache, so each test owns its root.
   const directory = mkdtempSync(path.join(tmpdir(), 'lrs-structure-'))
-  context.after(() => rmSync(directory, { recursive: true, force: true }))
+  context.onTestFinished(() =>
+    rmSync(directory, { recursive: true, force: true }),
+  )
   const root = path.join(directory, 'frontend')
   mkdirSync(root)
   const eslint = new ESLint({
@@ -38,14 +50,14 @@ function createFixture(context, { outsideCwd = false, additionalConfig } = {}) {
     directory,
     root,
     eslint,
-    async lint(filename, code = '') {
+    async lint(filename: string, code = '') {
       const [result] = await eslint.lintText(code, {
         filePath: path.join(root, filename),
       })
       assert.ok(result, 'The candidate file must be selected for linting')
       return result
     },
-    write(filename, contents) {
+    write(filename: string, contents: string) {
       const target = path.join(root, filename)
       mkdirSync(path.dirname(target), { recursive: true })
       writeFileSync(target, contents)
@@ -133,8 +145,10 @@ for (const filename of [
   test(`structure rejects ${filename}`, async (context) => {
     const result = await createFixture(context).lint(filename)
     assert.equal(result.messages.length, 1)
-    assert.equal(result.messages[0].ruleId, structureRule)
-    assert.equal(result.messages[0].severity, 2)
+    const [message] = result.messages
+    assert.ok(message)
+    assert.equal(message.ruleId, structureRule)
+    assert.equal(message.severity, 2)
   })
 }
 
@@ -154,6 +168,7 @@ test('separate ESLint instances report every file in the same invalid folder', a
   const first = fixture.write('src/data/first.ts', 'export const first = 1')
   const second = fixture.write('src/data/second.ts', 'export const second = 2')
   const [firstResult] = await fixture.eslint.lintFiles([first])
+  assert.ok(firstResult)
   assert.deepEqual(
     firstResult.messages.map((message) => message.ruleId),
     [structureRule],
@@ -175,6 +190,7 @@ test('separate ESLint instances report every file in the same invalid folder', a
     ],
   })
   const [secondResult] = await nextESLint.lintFiles([second])
+  assert.ok(secondResult)
   assert.deepEqual(
     secondResult.messages.map((message) => message.ruleId),
     [structureRule],
@@ -270,7 +286,12 @@ test('frontend path policy leaves sibling backend and framework files alone', as
 })
 
 test('structure factory requires an explicit absolute project directory', () => {
-  for (const root of ['.', 'apps/frontend', '', undefined]) {
+  for (const root of ['.', 'apps/frontend', '']) {
     assert.throws(() => createLrsConfig({ root }), /absolute project directory/)
   }
+  assert.throws(
+    // @ts-expect-error JavaScript callers can omit the required root value.
+    () => createLrsConfig({ root: undefined }),
+    /absolute project directory/,
+  )
 })

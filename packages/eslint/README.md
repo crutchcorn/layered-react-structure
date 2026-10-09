@@ -1,6 +1,6 @@
 # LRS ESLint rules
 
-[`lrs-eslint-plugin`](https://www.npmjs.com/package/lrs-eslint-plugin) enforces the import boundaries in [Layered React Structure](https://playfulprogramming.com/posts/layered-react-structure). It is an ESM package with no build step.
+[`lrs-eslint-plugin`](https://www.npmjs.com/package/lrs-eslint-plugin) enforces the import boundaries in [Layered React Structure](https://playfulprogramming.com/posts/layered-react-structure). It ships an ESM bundle and TypeScript declarations built with [tsdown](https://tsdown.dev/). Consumers can use it directly without a build step.
 
 Install it in your React project:
 
@@ -45,7 +45,9 @@ export default [
 ]
 ```
 
-Run `pnpm test:lib` for RuleTester and flat-configuration tests, and `pnpm test:eslint` to lint the package.
+From the repository root, run `pnpm nx test:lib lrs-eslint-plugin` for the TypeScript Vitest suite, including RuleTester, flat-configuration, and packed-package consumer tests. Nx builds the plugin first. Run `pnpm nx test:types lrs-eslint-plugin` to typecheck the source and tests, and `pnpm nx test:eslint lrs-eslint-plugin` to lint the package.
+
+The declarations cover the default plugin, `configs.recommended`, both rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
 
 ## Optional application structure
 
@@ -81,3 +83,13 @@ Tests may use `.spec.ts`, `.test.ts`, `.spec.tsx`, or `.test.tsx`, including com
 The factory preserves the application's TypeScript/JavaScript parser and import rules. Its path-only parser applies to other extensions so CSS, SVG, unknown extensions, and extensionless files are checked too. Scope additional code-analysis configurations to their relevant code extensions, particularly rules that require TypeScript parser services.
 
 The upstream plugin deduplicates folder diagnostics through a filesystem cache. This package isolates that cache in a temporary directory for each file and removes it after the check, so linting another file in the same invalid folder still reports an error. No project cache files or additional ignore entries are needed. The package tests exercise separate ESLint instances, non-code filesystem traversal, working-directory independence, and parser/import-rule composition.
+
+## Build and release
+
+Use the Node.js version in `.nvmrc` and the repository's pinned pnpm version. After `pnpm install`, run `pnpm test` from the repository root to run lint, formatting, strict typechecks, Vitest, and builds through Nx. `pnpm nx build lrs-eslint-plugin` produces `dist/index.js` and `dist/index.d.ts`; only `dist` and npm's standard package metadata/documentation are published. ESLint and the folder-structure plugin remain external dependencies.
+
+`pnpm --filter lrs-eslint-plugin pack --pack-destination /tmp` builds through `prepack` before creating a tarball. The test suite also unpacks a tarball into an isolated consumer and verifies that its runtime and declarations work without access to this package's source or development dependencies.
+
+Add a Changeset with `pnpm changeset` for release changes. The GitHub Actions release workflow creates a version pull request; after it is merged, it checks and packs the versioned package before publishing with npm provenance. Plugin metadata takes its name and version from `package.json` at build time.
+
+An npm maintainer must configure a trusted publisher for `crutchcorn/layered-react-structure`, workflow `release.yml`, with permission for direct `npm publish`. If the package does not exist on npm yet, publish the initial version from an authenticated maintainer environment first. See the [Changesets trusted publishing guide](https://changesets.dev/guide/versioning-and-publishing#trusted-publishing) and [npm trusted publishing documentation](https://docs.npmjs.com/trusted-publishers/).

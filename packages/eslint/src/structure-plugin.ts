@@ -1,17 +1,23 @@
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import type { ESLint, Rule } from 'eslint'
 import { projectStructurePlugin } from 'eslint-plugin-project-structure'
 
-const folderStructure = projectStructurePlugin.rules['folder-structure']
+// Upstream uses typescript-eslint's narrower AST and context declarations;
+// its rule objects implement ESLint's runtime plugin interface.
+const upstreamPlugin = projectStructurePlugin as unknown as ESLint.Plugin & {
+  rules: { 'folder-structure': Rule.RuleModule }
+}
+const folderStructure = upstreamPlugin.rules['folder-structure']
 
-export default {
-  ...projectStructurePlugin,
+const isolatedProjectStructurePlugin: ESLint.Plugin = {
+  ...upstreamPlugin,
   rules: {
-    ...projectStructurePlugin.rules,
+    ...upstreamPlugin.rules,
     'folder-structure': {
       ...folderStructure,
-      create(context) {
+      create(context: Rule.RuleContext): Rule.RuleListener {
         return {
           Program(node) {
             // Upstream skips this reserved name; caches live outside src here.
@@ -33,7 +39,7 @@ export default {
               path.join(tmpdir(), 'lrs-eslint-structure-'),
             )
             try {
-              const isolatedContext = Object.create(context, {
+              const isolatedContext: typeof context = Object.create(context, {
                 settings: {
                   value: {
                     ...context.settings,
@@ -41,7 +47,7 @@ export default {
                   },
                 },
               })
-              folderStructure.create(isolatedContext).Program(node)
+              folderStructure.create(isolatedContext).Program?.(node)
             } finally {
               rmSync(directory, { recursive: true, force: true })
             }
@@ -51,3 +57,5 @@ export default {
     },
   },
 }
+
+export default isolatedProjectStructurePlugin
