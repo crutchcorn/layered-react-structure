@@ -1,0 +1,10 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "React",
+      "description": "Structure React applications with clear layer boundaries.",
+      "skills": ["layered-react-structure"]
+    }
+  ]
+}

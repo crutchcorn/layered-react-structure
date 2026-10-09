@@ -1,12 +1,18 @@
 # LRS ESLint rules
 
-This private workspace plugin enforces the import boundaries in [Layered React Structure](https://playfulprogramming.com/posts/layered-react-structure). It is an ESM package with no build step.
+[`lrs-eslint-plugin`](https://www.npmjs.com/package/lrs-eslint-plugin) enforces the import boundaries in [Layered React Structure](https://playfulprogramming.com/posts/layered-react-structure). It is an ESM package with no build step.
 
-Add the package to the consuming workspace's development dependencies and compose its flat configuration after that application's parser configuration:
+Install it in your React project:
+
+```sh
+npm install --save-dev lrs-eslint-plugin 'eslint@^10.12.0' typescript-eslint
+```
+
+Compose its flat configuration after your application's parser configuration:
 
 ```js
 import tseslint from 'typescript-eslint'
-import lrs from '@demo-proj/lrs-eslint'
+import lrs from 'lrs-eslint-plugin'
 
 export default tseslint.config(
   ...tseslint.configs.recommended,
@@ -47,7 +53,7 @@ Run `pnpm test:lib` for RuleTester and flat-configuration tests, and `pnpm test:
 
 ```js
 import tseslint from 'typescript-eslint'
-import { createLrsConfig } from '@demo-proj/lrs-eslint'
+import { createLrsConfig } from 'lrs-eslint-plugin'
 
 export default tseslint.config(
   ...tseslint.configs.recommended,
