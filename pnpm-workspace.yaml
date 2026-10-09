@@ -1,8 +1,9 @@
 packages:
-  - 'apps/*'
+  - 'examples/*'
   - 'packages/*'
 allowBuilds:
   '@journeyapps/wa-sqlite': false
   esbuild: true
   msw: true
   nx: true
+  unrs-resolver: false
