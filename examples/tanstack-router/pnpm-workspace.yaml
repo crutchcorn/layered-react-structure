@@ -1,4 +1,0 @@
-allowBuilds:
-  esbuild: true
-  lightningcss: true
-  unrs-resolver: set this to true or false
