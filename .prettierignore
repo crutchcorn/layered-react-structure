@@ -1,0 +1,11 @@
+**/.next
+**/.nx/cache
+**/.svelte-kit
+**/build
+**/coverage
+**/dist
+**/docs/**/reference/**
+**/codemods/**/__testfixtures__
+pnpm-lock.yaml
+apps/backend/out/openapi.json
+apps/frontend/src/services/schemas/chat.d.ts

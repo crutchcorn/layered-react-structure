@@ -1,0 +1,24 @@
+{
+  "name": "lrs-eslint-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ESLint import boundaries for Layered React Structure.",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test:eslint": "eslint .",
+    "test:lib": "node --test tests/*.test.js"
+  },
+  "peerDependencies": {
+    "eslint": "^10.12.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.12.0",
+    "typescript-eslint": "^8.71.1"
+  },
+  "dependencies": {
+    "eslint-plugin-project-structure": "^3.14.5"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "useInferencePlugins": false,
+  "parallel": 5,
+  "namedInputs": {
+    "sharedGlobals": [
+      "{workspaceRoot}/.nvmrc",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/tsconfig.json"
+    ],
+    "default": [
+      "sharedGlobals",
+      "{projectRoot}/**/*",
+      "!{projectRoot}/**/*.md"
+    ],
+    "production": [
+      "default",
+      "!{projectRoot}/tests/**/*",
+      "!{projectRoot}/eslint.config.js"
+    ]
+  },
+  "targetDefaults": {
+    "test:knip": {
+      "cache": true,
+      "inputs": ["{workspaceRoot}/**/*"]
+    },
+    "test:sherif": {
+      "cache": true,
+      "inputs": ["{workspaceRoot}/**/package.json"]
+    },
+    "test:eslint": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^production", "{workspaceRoot}/eslint.config.js"]
+    },
+    "test:lib": {
+      "cache": true,
+      "dependsOn": ["^build", "gen:openapi"],
+      "inputs": ["default", "^production"],
+      "outputs": ["{projectRoot}/coverage"]
+    },
+    "test:types": {
+      "cache": true,
+      "dependsOn": ["^build", "gen:openapi"],
+      "inputs": ["default", "^production"]
+    },
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build", "gen:openapi"],
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/build", "{projectRoot}/dist"]
+    },
+    "dev": {
+      "cache": false,
+      "dependsOn": ["^build", "gen:openapi"],
+      "inputs": ["production", "^production"]
+    },
+    "test:build": {
+      "cache": true,
+      "dependsOn": ["build"],
+      "inputs": ["production"]
+    },
+    "gen:openapi": {
+      "cache": true,
+      "dependsOn": ["^gen:openapi"],
+      "inputs": ["production", "^production"],
+      "outputs": [
+        "{projectRoot}/out/openapi.json",
+        "{projectRoot}/src/services/schemas/chat.d.ts"
+      ]
+    },
+    "test:e2e": {
+      "cache": true,
+      "dependsOn": ["build"],
+      "inputs": ["default", "^production"],
+      "outputs": [
+        "{projectRoot}/test-results",
+        "{projectRoot}/playwright-report"
+      ]
+    }
+  },
+  "analytics": false
+}

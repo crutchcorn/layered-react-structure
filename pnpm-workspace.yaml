@@ -1,0 +1,8 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+allowBuilds:
+  '@journeyapps/wa-sqlite': false
+  esbuild: true
+  msw: true
+  nx: true
