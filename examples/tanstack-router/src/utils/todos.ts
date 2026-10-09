@@ -1,19 +1,6 @@
 import * as v from 'valibot'
 import { TodoInputSchema } from './todo-schema'
-import type { Todo, TodoInput, TodoInputErrors } from '../types/todo'
-
-export function getTodoInputErrors(input: TodoInput): TodoInputErrors {
-  const result = v.safeParse(TodoInputSchema, input)
-  if (result.success) return {}
-
-  const errors = v.flatten<typeof TodoInputSchema>(result.issues)
-  return Object.fromEntries(
-    Object.entries(errors.nested ?? {}).map(([field, messages]) => [
-      field,
-      messages[0],
-    ]),
-  )
-}
+import type { Todo, TodoInput } from '../types/todo'
 
 export function validateTodoInput(input: TodoInput): TodoInput {
   return v.parse(TodoInputSchema, input)

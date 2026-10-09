@@ -1,47 +1,39 @@
-import { useState } from 'react'
+import { useForm } from '@tanstack/react-form'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useTodoActions } from '../../hooks/use-todos'
 import { usePageTitle } from '../../hooks/use-page-title'
-import { getTodoInputErrors } from '../../utils/todos'
 import { TodoCreateUI } from './todo-create.ui'
-import type { TodoInput, TodoInputErrors } from '../../types/todo'
+import { todoFormOptions } from './utils/todo-form-options'
 
 export function TodoCreateView() {
   usePageTitle('New task')
   const navigate = useNavigate()
   const actions = useTodoActions()
-  const [values, setValues] = useState<TodoInput>({
-    title: '',
-    description: '',
-    priority: 'medium',
-    dueDate: null,
+  const form = useForm({
+    ...todoFormOptions,
+    onSubmit: async ({ schemaOutputs, createValidationError }) => {
+      try {
+        const todo = await actions.createTodo(schemaOutputs[0])
+        await navigate({ to: '/todos/$todoId', params: { todoId: todo.id } })
+      } catch (error) {
+        return createValidationError(
+          error instanceof Error
+            ? error.message
+            : 'Could not create this task.',
+        )
+      }
+    },
   })
-  const [fieldErrors, setFieldErrors] = useState<TodoInputErrors>({})
 
-  async function submit() {
-    if (actions.isPending) return
-    const errors = getTodoInputErrors(values)
-    setFieldErrors(errors)
-    if (Object.keys(errors).length) return
-
-    try {
-      const todo = await actions.createTodo(values)
-      await navigate({ to: '/todos/$todoId', params: { todoId: todo.id } })
-    } catch {
-      // Keep the draft in place and display the mutation error.
-    }
+  function submit() {
+    if (!actions.isPending) void form.handleSubmit()
   }
 
   return (
     <TodoCreateUI
-      values={values}
-      onChange={(patch) => {
-        setValues((current) => ({ ...current, ...patch }))
-        setFieldErrors({})
-      }}
-      onSubmit={() => {
-        void submit()
-      }}
+      form={form}
+      isPending={actions.isPending}
+      onSubmit={submit}
       cancelLink={
         <Link to="/" search={{}}>
           Cancel
@@ -52,9 +44,6 @@ export function TodoCreateView() {
           All tasks
         </Link>
       }
-      isSaving={actions.isPending}
-      error={actions.error?.message}
-      fieldErrors={fieldErrors}
     />
   )
 }

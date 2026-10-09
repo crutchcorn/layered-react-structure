@@ -11,9 +11,9 @@ import {
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { StrictMode } from 'react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '../src/app'
-import { TODOS_STORAGE_KEY } from '../src/constants/todos'
+import { TODOS_QUERY_KEY, TODOS_STORAGE_KEY } from '../src/constants/todos'
 import { getRouter } from '../src/router'
 import { createTodoRuntime } from '../src/services/todo-runtime'
 
@@ -304,6 +304,84 @@ describe('the client-only task app', () => {
     expect(
       screen.getByRole('heading', { name: 'A clear next step' }),
     ).toBeVisible()
+  })
+
+  it('keeps a title error while other fields change and revalidates the corrected title', async () => {
+    const { user, router, runtime } = renderApp('/todos/new')
+    const title = await screen.findByRole('textbox', { name: 'Task title' })
+    const submit = screen.getByRole('button', { name: 'Create task' })
+    await waitFor(() => expect(submit).toBeEnabled())
+
+    await user.click(submit)
+    expect(await screen.findByText('Give your task a title.')).toBeVisible()
+    expect(title).toHaveAttribute('aria-invalid', 'true')
+    expect(router.state.location.pathname).toBe('/todos/new')
+    expect(runtime.queryClient.getQueryData(TODOS_QUERY_KEY) ?? []).toEqual([])
+
+    await user.type(
+      screen.getByRole('textbox', { name: /^Notes/ }),
+      'Remember the gloves.',
+    )
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Priority' }),
+      'high',
+    )
+    expect(screen.getByText('Give your task a title.')).toBeVisible()
+    expect(title).toHaveAttribute('aria-invalid', 'true')
+
+    await user.type(title, 'Tend the garden')
+    await waitFor(() => {
+      expect(
+        screen.queryByText('Give your task a title.'),
+      ).not.toBeInTheDocument()
+      expect(title).toHaveAttribute('aria-invalid', 'false')
+    })
+    expect(router.state.location.pathname).toBe('/todos/new')
+    expect(runtime.queryClient.getQueryData(TODOS_QUERY_KEY) ?? []).toEqual([])
+
+    await user.click(submit)
+    expect(
+      await screen.findByRole('heading', { name: 'Tend the garden' }),
+    ).toBeVisible()
+    expect(runtime.queryClient.getQueryData(TODOS_QUERY_KEY)).toEqual([
+      expect.objectContaining({
+        title: 'Tend the garden',
+        description: 'Remember the gloves.',
+        priority: 'high',
+      }),
+    ])
+  })
+
+  it('preserves the draft after a submission error and allows a successful retry', async () => {
+    const runtime = createTodoRuntime()
+    const createTodo = vi
+      .spyOn(runtime, 'createTodo')
+      .mockImplementationOnce(() => {
+        throw new Error('Could not create this task.')
+      })
+    const { user, router } = renderApp('/todos/new', runtime)
+    const title = await screen.findByRole('textbox', { name: 'Task title' })
+    await user.type(title, 'Try again with this draft')
+    const submit = screen.getByRole('button', { name: 'Create task' })
+    await waitFor(() => expect(submit).toBeEnabled())
+
+    await user.click(submit)
+    expect(await screen.findByText('Could not create this task.')).toBeVisible()
+    expect(title).toHaveValue('Try again with this draft')
+    expect(router.state.location.pathname).toBe('/todos/new')
+    expect(runtime.queryClient.getQueryData(TODOS_QUERY_KEY) ?? []).toEqual([])
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Create task' })).toBeEnabled()
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Create task' }))
+    expect(
+      await screen.findByRole('heading', { name: 'Try again with this draft' }),
+    ).toBeVisible()
+    expect(createTodo).toHaveBeenCalledTimes(2)
+    expect(runtime.queryClient.getQueryData(TODOS_QUERY_KEY)).toEqual([
+      expect.objectContaining({ title: 'Try again with this draft' }),
+    ])
   })
 
   it('preserves malformed storage and clearly makes new changes session-only', async () => {

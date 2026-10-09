@@ -1,6 +1,6 @@
 # Daybook
 
-A client-only TODO app built with TanStack Router, TanStack Query, and Layered React Structure (LRS). Create tasks with notes, priorities, and optional due dates; find them with search and status filters; open a task to complete or delete it. There is no server or account.
+A client-only TODO app built with TanStack Router, TanStack Query, TanStack Form v2 alpha, and Layered React Structure (LRS). Create tasks with notes, priorities, and optional due dates; find them with search and status filters; open a task to complete or delete it. There is no server or account.
 
 ## Run locally
 
@@ -41,7 +41,9 @@ The workspace `lrs-eslint-plugin` checks presentation and service import boundar
 
 Styles are scoped with colocated `.module.css` files. Shared presentation classes live in `src/styles.module.css`; its explicit `:global(...)` selectors provide the document reset, theme, and accessibility defaults.
 
-Valibot schemas in `src/utils/` validate task input, saved task records, and URL filters. Shared domain types are inferred from the schemas. The runtime validates the persistence envelope before restoring the cache, and the creation form maps schema issues to field errors. Custom schema checks handle calendar dates and unique task IDs.
+Valibot schemas in `src/utils/` validate task input, saved task records, and URL filters. Shared domain types are inferred from the schemas. The runtime validates the persistence envelope before restoring the cache. Custom schema checks handle calendar dates and unique task IDs.
+
+The creation form uses `@tanstack/react-form` pinned to `2.0.0-alpha.2`. Following the [v2 form-splitting guide](https://raw.githubusercontent.com/tanstack/form/alpha/docs/splitting-forms.md), `views/todo-create/utils/todo-form-options.ts` shares defaults and the Valibot validator, and `ReactFormType` derives the form prop type. `todo-create.view.tsx` owns form setup, validation, submission, navigation, and the restoration guard, then passes the form to `todo-create.ui.tsx`. The UI owns the `form.Field` and `form.Subscribe` JSX, keeping JavaScript behavior in the view and templating in the UI. Validation runs on submit, then on change after the first attempt. The submit handler uses Valibot's parsed `schemaOutputs` so saved text is trimmed while editing preserves the draft. Query mutations handle persistence.
 
 ## Persistence
 
