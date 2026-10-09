@@ -11,6 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint",
+    "test:eslint": "pnpm run lint",
+    "test:types": "tsc --noEmit",
     "format": "prettier --write . && eslint --fix",
     "check": "prettier --check ."
   },

@@ -1,5 +1,4 @@
-
-@import "tailwindcss";
+@import 'tailwindcss';
 
 * {
   box-sizing: border-box;
@@ -14,4 +13,3 @@ body,
 body {
   margin: 0;
 }
-
