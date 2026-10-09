@@ -1,9 +1,39 @@
 {
   "name": "lrs-eslint-plugin",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.0.1",
   "type": "module",
-  "description": "ESLint import boundaries for Layered React Structure.",
+  "description": "ESLint rules for Layered React Structure (LRS): enforce React import boundaries and an optional file and folder structure.",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "react",
+    "typescript",
+    "layered-react-structure",
+    "lrs",
+    "import-boundaries",
+    "project-structure"
+  ],
+  "author": {
+    "name": "Corbin Crutchley",
+    "url": "https://github.com/crutchcorn"
+  },
+  "homepage": "https://github.com/crutchcorn/layered-react-structure#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crutchcorn/layered-react-structure.git",
+    "directory": "packages/eslint"
+  },
+  "bugs": {
+    "url": "https://github.com/crutchcorn/layered-react-structure/issues"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "exports": {
     ".": "./src/index.js"
   },
