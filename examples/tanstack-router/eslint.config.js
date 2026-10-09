@@ -1,9 +1,11 @@
 //  @ts-check
 
 import { tanstackConfig } from '@tanstack/eslint-config'
+import lrs from 'lrs-eslint-plugin'
 
 export default [
   ...tanstackConfig,
+  ...lrs.configs.recommended,
   {
     rules: {
       'import/no-cycle': 'off',
