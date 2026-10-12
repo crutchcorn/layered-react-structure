@@ -41,6 +41,8 @@ stats.html
 apps/backend/data/
 playwright-report/
 test-results/
+.promptfoo/
+evals/results/
 
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*

@@ -43,6 +43,11 @@ jobs:
       - name: Check formatting
         run: pnpm run test:format
 
+      - name: Validate skill eval configuration
+        run: pnpm run test:evals
+        env:
+          PROMPTFOO_DISABLE_TELEMETRY: '1'
+
       - name: Build all packages with Nx
         run: pnpm run build
 

@@ -1,0 +1,441 @@
+- description: Preserve JavaScript tooling and a single feature's scope
+  vars:
+    task: |
+      Propose an LRS refactor for only the cart feature using this supplied snapshot.
+      Give a target file tree, explain the responsibilities, identify consumer
+      updates, and name relevant existing checks. Do not perform repository edits.
+
+      This is a JavaScript React Router app using Jest and SCSS Modules. The
+      package scripts are `test:cart` (cart tests), `lint`, and `build`. No other
+      feature uses the cart hook or pricing helper. Keep the current language,
+      framework, styling, and test tools.
+
+      Current files:
+      src/routes.jsx                 imports Cart from './views/cart/cart.jsx'
+      src/views/cart/cart.jsx
+      src/views/cart/cart.module.scss
+      src/views/cart/cart.test.jsx
+      src/views/cart/hooks/use-cart.js
+
+      // src/views/cart/cart.jsx
+      import { useCart } from './hooks/use-cart.js'
+      import styles from './cart.module.scss'
+
+      function total(items) {
+        return items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      }
+
+      export default function Cart() {
+        const { items, isLoading, error, retry } = useCart()
+        return (
+          <main className={styles.cart}>
+            {isLoading ? <p>Loading cart</p> : error ? (
+              <button onClick={retry}>Try again</button>
+            ) : <p>Total: {total(items)}</p>}
+          </main>
+        )
+      }
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: the proposal separates
+        cart orchestration from presentation using JavaScript .view.jsx and
+        .ui.jsx files; keeps cart-only hooks and helpers within the cart feature
+        (the pure helper may remain local or move into its local utils directory);
+        keeps layout and SCSS styling in presentation; preserves loading, error,
+        retry, and total display behavior; identifies the route import and
+        affected tests/imports for updating; and proposes relevant existing
+        scripts for verification without claiming to have run them. It must keep
+        React Router, JavaScript, Jest, and SCSS Modules, and avoid unrelated
+        whole-app migration or empty speculative directories. Accept equivalent
+        valid file names, code, and wording; do not require new tests or a plugin
+        installation to pass.
+
+- description: Distinguish presentation hooks and context from business behavior
+  vars:
+    task: |
+      Review this presentational component against LRS. Identify which behavior
+      should stay, which should move, and what props should cross the boundary.
+      Use only the supplied snapshot and give a review, not repository edits.
+      useTheme and useTranslation affect presentation only. useAuth reads the
+      application session, and useProductAvailability queries inventory.
+
+      // src/views/catalog/components/product-card.ui.tsx
+      function ProductCardUI({ product }) {
+        const theme = useTheme()
+        const { t } = useTranslation()
+        const { user } = useAuth()
+        const { available } = useProductAvailability(product.id)
+        const [expanded, setExpanded] = useState(false)
+        return (
+          <article data-theme={theme}>
+            <h2>{product.name}</h2>
+            <button onClick={() => setExpanded(!expanded)}>
+              {t('details')}
+            </button>
+            {expanded && <p>{product.description}</p>}
+            {user?.canOrder && available && <button>{t('order')}</button>}
+          </article>
+        )
+      }
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: presentation-only theme
+        and translation context are permitted in this component; expanded
+        details state can stay local; session/authorization and inventory-query
+        behavior move to a view or application hook used by the view; and the UI
+        receives the relevant explicit values and callbacks via props, rather
+        than a whole session, query result, or store object. Business eligibility
+        must be decided outside presentation, for example through a canOrder
+        boolean. Fail a blanket ban on React hooks/context in presentation or a
+        proposal that leaves the application hooks in the UI. Accept equivalent
+        valid code and wording; no particular theme or translation library is
+        required.
+
+- description: Let the view own an edit workflow opened from a reusable card
+  vars:
+    task: |
+      Review the ownership of this edit interaction and propose a small LRS
+      refactor. Include the new component interface and where the dialog is
+      composed. Use this supplied code only; do not assume repository tools.
+      EditPersonDialog reads application permissions, loads editable details,
+      and saves changes through an API. It therefore contains business logic.
+
+      // src/components/person-card.tsx
+      import { EditPersonDialog } from '../views/people/edit-person-dialog'
+
+      export function PersonCard({ person }) {
+        const [editing, setEditing] = useState(false)
+        const [expanded, setExpanded] = useState(false)
+        return (
+          <article>
+            <h2>{person.name}</h2>
+            <button onClick={() => setExpanded(!expanded)}>Details</button>
+            {expanded && <p>{person.bio}</p>}
+            <button onClick={() => setEditing(true)}>Edit</button>
+            {editing && (
+              <EditPersonDialog personId={person.id} onClose={() => setEditing(false)} />
+            )}
+          </article>
+        )
+      }
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: PersonCard stops importing
+        and instantiating the business dialog; it exposes an explicit edit
+        callback such as onEdit; a view owns the selected person/edit workflow
+        and composes the dialog, directly or through a caller-provided slot; and
+        ordinary expanded-details UI state is allowed to stay in PersonCard.
+        The view must coordinate closing the dialog as well as opening it.
+        Hiding the business import behind another presentation wrapper or passing
+        a store/state tuple into the card does not fix the boundary. Accept
+        equivalent valid interfaces, composition patterns, and wording.
+
+- description: Classify asynchronous computation and synchronous I/O by effects
+  vars:
+    task: |
+      Place these three existing functions into appropriate LRS layers and
+      explain their dependency direction. They are used by multiple views.
+      Preserve their observable behavior and public contracts, including the
+      Promise returned by calculateTotal. Give an architecture recommendation
+      from this snapshot; no actual tools or edits are available.
+
+      export async function calculateTotal(items) {
+        return items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      }
+
+      export function saveDraft(draft) {
+        localStorage.setItem('draft', JSON.stringify(draft))
+      }
+
+      export function useDraft(initialDraft) {
+        const [draft, setDraft] = useState(initialDraft)
+        function updateDraft(next) {
+          setDraft(next)
+          saveDraft(next)
+        }
+        return { draft, updateDraft }
+      }
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: calculateTotal is pure
+        computation placed in shared src/utils/ and retains its asynchronous
+        Promise contract; saveDraft is synchronous I/O placed in shared
+        src/services/; and useDraft is reusable React behavior placed in shared
+        src/hooks/ that may call the storage service. Services and utilities
+        remain independent of React and views. Fail classification based solely
+        on whether a function is async, converting calculateTotal to a
+        synchronous public API, or leaving storage writes in a pure utility.
+        Accept equivalent valid file names, code, and wording.
+
+- description: Repair type-only and barrel imports that hide layer dependencies
+  vars:
+    task: |
+      Review both imports in PeopleUI and name concrete destinations for any
+      misplaced code. Person is shared by the service, view, and UI. formatPerson
+      only formats a person's name, has no effects, and is used by people and
+      search views. Explain whether type erasure or the barrel fixes either
+      boundary. This is the complete relevant snapshot; provide a review only.
+
+      // src/views/people/people.ui.tsx
+      import type { Person } from '../../services/people'
+      import { formatPerson } from '../../shared'
+      export function PeopleUI({ people }: { people: Person[] }) {
+        return <ul>{people.map(person => <li key={person.id}>{formatPerson(person)}</li>)}</ul>
+      }
+
+      // src/services/people.ts
+      export interface Person { id: string; firstName: string; lastName: string }
+      export async function fetchPeople(): Promise<Person[]> { /* HTTP request */ }
+
+      // src/shared.ts
+      export { formatPerson } from './views/people/people.view'
+
+      // src/views/people/people.view.tsx
+      export function formatPerson(person: Person) {
+        return `${person.firstName} ${person.lastName}`
+      }
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: the response identifies
+        both the UI-to-service type dependency and the hidden UI-to-view
+        dependency; moves the shared Person declaration to src/types/; moves
+        the reused pure formatter to src/utils/; and updates consumers to import
+        from the appropriate layers. It must explain that type erasure and a
+        barrel do not by themselves make these dependencies compliant. An
+        appropriately updated barrel may remain; deleting every barrel is not
+        required. Accept equivalent valid file names, code, and wording.
+
+- description: Keep feature-only code local and promote genuinely reused code
+  vars:
+    task: |
+      Suggest exact LRS locations for these four modules and explain why each
+      is local or shared. These are the known consumers; do not anticipate
+      hypothetical reuse or create a new package. Give a plan from this supplied
+      snapshot, without repository edits.
+
+      1. useOrderFilters currently lives in src/hooks/use-order-filters.ts.
+         It uses React state to coordinate order filtering. Only OrdersView uses it.
+         export function useOrderFilters() { /* React state and filter actions */ }
+
+      2. OrderSummary currently lives in src/components/order-summary.tsx.
+         It renders totals received as props. Only OrdersUI uses it.
+         export function OrderSummary({ total }) { return <p>Total: {total}</p> }
+
+      3. formatCurrency currently lives in src/views/orders/format-currency.ts.
+         OrdersUI and ReturnsUI both use this pure function.
+         export function formatCurrency(value) { return `$${value.toFixed(2)}` }
+
+      4. fetchAddress currently lives in src/views/orders/address.ts.
+         OrdersView and ReturnsView both use this non-React HTTP service.
+         export async function fetchAddress(id) {
+           return fetch(`/api/addresses/${id}`).then(response => response.json())
+         }
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: the order-only React hook
+        goes under src/views/orders/hooks/; the order-only presentational
+        component goes under src/views/orders/components/; the reused pure
+        formatter goes under src/utils/; and the reused HTTP service goes under
+        src/services/. The explanation uses known consumer scope and actual
+        responsibilities, preserves the formatter's purity and service's
+        independence from React, and does not introduce speculative abstractions
+        or a new package. Accept equivalent valid kebab-case module names and
+        colocated component subfolders rather than requiring one exact tree.
+
+- description: Preserve framework entry points and server/client boundaries
+  vars:
+    task: |
+      Propose an LRS file split for this Next.js App Router page. Orders must
+      continue to load on the server; the database module and credentials must
+      never enter the browser bundle. Add a local interactive text filter for
+      the already-loaded orders. Show a target tree and describe the imports,
+      data passed across the server/client boundary, and location of metadata.
+      Keep the existing framework filenames. This is a design task from the
+      supplied snapshot, so do not claim to edit or run anything.
+
+      // src/app/orders/page.tsx — currently a server component
+      import { db } from '../../server/db'
+      export const metadata = { title: 'Orders' }
+      export default async function Page() {
+        const rows = await db.orders.findMany()
+        const orders = rows.map(row => ({ id: row.id, label: row.label }))
+        return <main><h1>Orders</h1><ul>{orders.map(order => (
+          <li key={order.id}>{order.label}</li>
+        ))}</ul></main>
+      }
+
+      // src/server/db.ts
+      import 'server-only'
+      export const db = createDatabaseClient(process.env.DATABASE_URL)
+
+      The order id and label values are strings. The filter changes only which
+      loaded labels are displayed; it does not call the database or enforce a
+      business rule. No framework migration is requested.
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: app/orders/page.tsx and
+        metadata remain in the framework-required entry; the route delegates
+        orchestration to an orders view; database I/O is delegated to a
+        server-only service; layout stays in presentation; and a valid client
+        component boundary contains the interactive filter while server-loaded
+        serializable order data is passed to it. Presentation-only filter state
+        may live in that client UI. The database module/service must never be
+        imported into the client component graph or expose credentials in props.
+        Fail renaming the framework page file, making the database-loading route
+        a client component, or moving database reads into a browser hook. Accept
+        equivalent valid server-view/client-presentation compositions and wording.
+
+- description: Exercise view behavior through the network boundary with existing tests
+  vars:
+    task: |
+      Recommend a focused test plan, with a short test sketch, for loading,
+      request failure, retry, and successful results in PeopleView. Identify
+      what is rendered, what is mocked, and the visible assertions. The existing
+      test stack is Jest, jsdom, Testing Library, user-event, jest-dom, and MSW
+      with an established msw/node server setup. Keep this stack. Work from this
+      snapshot only and do not claim the tests have been run.
+
+      // src/views/people/people.view.tsx
+      export function PeopleView() {
+        const { people, isLoading, error, retry } = usePeople()
+        return <PeopleUI people={people} isLoading={isLoading} error={error} onRetry={retry} />
+      }
+
+      usePeople fetches GET /api/people through a service and starts a fresh
+      request when retry is called. PeopleUI renders 'Loading people' during
+      loading, 'Could not load people' and a 'Try again' button on failure,
+      and a list of each person's name on success. The hook and UI are actual
+      application code. No other provider setup is required.
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: tests render PeopleView
+        with the real participating hook, service, and UI; intercept GET
+        /api/people with the existing MSW network boundary; assert visible
+        loading, error, and successful names; and click the visible Try again
+        control with user-event to demonstrate recovery from a failed request
+        to success. The plan/sketch must preserve the existing Jest/jsdom stack
+        and use assertions on user-visible behavior instead of internal call
+        counts. Fail replacing usePeople, the service, or PeopleUI with mocks in
+        these integration tests, requiring a runner migration, or claiming tests
+        were executed. Accept a concise sketch with explanatory prose rather
+        than requiring full runnable setup or exact MSW version-specific syntax.
+
+- description: Keep styles out of views while respecting an explicit Tailwind requirement
+  vars:
+    task: |
+      Refactor this boundary according to LRS. Our explicit project requirement
+      is to keep Tailwind class strings inline in presentational JSX, so do not
+      move those classes to a separate style module. Explain where the layout,
+      classes, data access, and props belong. Give replacement snippets or a
+      precise plan from the supplied code; do not assume repository access.
+
+      // src/views/people/people.view.tsx
+      export function PeopleView() {
+        const { people, isLoading } = usePeople()
+        return (
+          <main className="mx-auto max-w-4xl p-6">
+            <h1 className="text-2xl font-bold">People</h1>
+            <PeopleUI people={people} isLoading={isLoading} />
+          </main>
+        )
+      }
+
+      // src/views/people/people.ui.tsx
+      export function PeopleUI({ people, isLoading }) {
+        if (isLoading) return <p>Loading people</p>
+        return <ul>{people.map(person => <li key={person.id}>{person.name}</li>)}</ul>
+      }
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: layout markup, heading,
+        and styling move out of PeopleView into PeopleUI or a presentational
+        layout; PeopleView continues to call usePeople and pass explicit people
+        and loading values as props; and inline Tailwind strings are retained in
+        presentation in accordance with the explicit project requirement. The
+        loading and people-list behavior must be preserved. Fail insisting on a
+        style-module migration, putting the application hook in presentation, or
+        keeping layout classes in the view. Accept equivalent valid composition,
+        code, and wording.
+
+- description: Compose optional lint tooling and explain alias and barrel limitations
+  vars:
+    task: |
+      Recommend LRS architecture linting for this app, including the companion
+      plugin, how to compose its configuration, which coverage each option
+      provides, and what still needs manual review. Give a configuration sketch
+      or precise setup plan only; do not install anything or claim checks ran.
+
+      This is a TypeScript React app at /repo/apps/shop with a src/ directory.
+      Its layout matches the companion plugin's TypeScript React structure
+      policy. The app already has ESLint configured with typescript-eslint's
+      parser and its own rules; these must be retained. Its package manager is
+      pnpm. The plugin is not installed yet.
+
+      Representative files:
+      src/views/catalog/catalog.view.tsx
+      src/views/catalog/catalog.ui.tsx
+      src/services/products.ts
+      src/types/product.ts
+
+      Some imports use opaque aliases and indirect barrels. For example,
+      @catalog-data is an alias to a barrel that ultimately re-exports a view's
+      application hook. Explain whether the lint plugin alone can reliably
+      identify every such dependency violation. Distinguish required LRS
+      boundaries from optional tooling choices.
+  assert:
+    - type: llm-rubric
+      value: |
+        Evaluate the response to this task:
+        {{task}}
+
+        Pass only if all core decisions are satisfied: recommends the optional
+        lrs-eslint-plugin as a development dependency using pnpm; composes its
+        configuration with the existing parser and rules; describes
+        lrs.configs.recommended as checking imports in src/**/*.ui.{tsx,jsx} and
+        src/**/services/; and describes createLrsConfig as adding the TypeScript
+        React file/folder policy, with root set to the absolute application
+        directory /repo/apps/shop rather than its src directory. Because this
+        task states that the structural policy fits, recommending that helper
+        is appropriate. The answer must explain that rules inspect module paths
+        without tracing the dependency graph, so opaque aliases and indirect
+        barrels need manual review. Fail promising full transitive dependency
+        analysis, replacing the project's parser/rules, treating the plugin as
+        mandatory for LRS, or claiming installation/execution. Accept equivalent
+        valid configuration composition and wording, without requiring one
+        exact import syntax or command spelling.
