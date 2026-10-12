@@ -67,6 +67,8 @@ The recommended configuration checks presentation imports in `src/**/*.ui.{tsx,j
 
 ## Work with the skill locally
 
+See [Contributing](CONTRIBUTING.md#evaluate-the-lrs-skill) to run the skill's Promptfoo evals and repository checks.
+
 To check skill discovery from this checkout without installing it:
 
 ```sh

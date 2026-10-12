@@ -7,5 +7,7 @@
 **/docs/**/reference/**
 **/codemods/**/__testfixtures__
 pnpm-lock.yaml
+.promptfoo/
+evals/results/
 apps/backend/out/openapi.json
 apps/frontend/src/services/schemas/chat.d.ts
