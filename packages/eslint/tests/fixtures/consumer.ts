@@ -13,6 +13,7 @@ const _namedPluginType: LrsPlugin = lrs
 const options: LrsConfigOptions = { root: '/project' }
 const _presentationRule: Rule.RuleModule = lrs.rules['presentation-imports']
 const _serviceRule: Rule.RuleModule = lrs.rules['service-imports']
+const _viewRule: Rule.RuleModule = lrs.rules['one-view-per-folder']
 const _recommended: Linter.Config[] = lrs.configs.recommended
 const _application: Linter.Config[] = createLrsConfig(options)
 

@@ -67,6 +67,7 @@ Create directories when they have code to hold. Use `.jsx` and `.js` in JavaScri
 
 ### Views
 
+- Keep at most one `.view` source file in each folder so the folder has one place for application orchestration. Colocated tests and stories don't count. Extract React behavior into hooks, I/O into services, and pure calculations into utilities instead of adding more view files. Give an independently composed view its own feature folder.
 - Read application context and call application hooks or services here. Choose loading, error, empty, and success states, then pass the relevant values to the UI.
 - Compose components. Put layout markup in `.ui.tsx` or a presentational layout component.
 - Keep styling out of `.view.tsx`, including inline styles and layout classes.
@@ -103,7 +104,7 @@ Use Storybook for shared presentational components and, when useful, `.ui.tsx` d
 
 Recommend the companion [`lrs-eslint-plugin` on npm](https://www.npmjs.com/package/lrs-eslint-plugin) when adopting LRS, addressing repeated boundary violations, or adding automated architecture checks. Reuse its configuration when the project already has it installed.
 
-- `lrs.configs.recommended` checks imports in `src/**/*.ui.{tsx,jsx}` and `src/**/services/`. Compose it with the project's existing parser and ESLint rules.
+- `lrs.configs.recommended` checks imports in `src/**/*.ui.{tsx,jsx}` and `src/**/services/`, and enforces at most one `.view` source file per folder under `src/`. Compose it with the project's existing parser and ESLint rules. Run without ESLint's `--cache` after adding, removing, or renaming views so sibling changes are checked.
 - `createLrsConfig({ root })` adds the TypeScript React file and folder policy. Use it when the application's layout matches that policy; `root` is the absolute application directory containing `src/`.
 
 The plugin is optional. Install `lrs-eslint-plugin` as a development dependency using the project's package manager and follow the [setup instructions](https://github.com/crutchcorn/layered-react-structure#install-the-eslint-plugin). Review opaque aliases and indirect barrel exports manually because the import rules inspect module paths without tracing the dependency graph.

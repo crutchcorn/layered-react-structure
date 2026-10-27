@@ -6,10 +6,10 @@ Read [Scale Your Project with Layered React Structure](https://playfulprogrammin
 
 This repository contains tools for adopting and enforcing LRS. Use them together or independently:
 
-| Tool                                                             | Purpose                                                                           |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| [Agent skill](skills/layered-react-structure/SKILL.md)           | Guide your coding agent when building, refactoring, or reviewing React features.  |
-| [ESLint plugin](https://www.npmjs.com/package/lrs-eslint-plugin) | Check import boundaries and optionally enforce the LRS file and folder structure. |
+| Tool                                                             | Purpose                                                                                                                |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [Agent skill](skills/layered-react-structure/SKILL.md)           | Guide your coding agent when building, refactoring, or reviewing React features.                                       |
+| [ESLint plugin](https://www.npmjs.com/package/lrs-eslint-plugin) | Check import boundaries, limit each folder to one view file, and optionally enforce the LRS file and folder structure. |
 
 ## Install the skill
 
@@ -41,7 +41,7 @@ npm install --save-dev lrs-eslint-plugin 'eslint@^10.12.0' typescript-eslint
 
 Use your project's package manager when adding the dependencies. The plugin ships a ready-to-use ESM bundle with TypeScript declarations; consumers need no build step.
 
-Add the import-boundary rules to `eslint.config.mjs` in the application directory containing `src/`:
+Add the recommended rules to `eslint.config.mjs` in the application directory containing `src/`:
 
 ```js
 import tseslint from 'typescript-eslint'
@@ -56,7 +56,7 @@ If you already have an ESLint configuration, keep its parser and rules and appen
 npx eslint src
 ```
 
-The recommended configuration checks presentation imports in `src/**/*.ui.{tsx,jsx}` and service imports under `src/**/services/`. For optional TypeScript React file and folder enforcement, use the `createLrsConfig({ root })` preset described in the [plugin documentation](packages/eslint/README.md#optional-application-structure). That documentation also covers custom rule scopes and the limits of static import checks.
+The recommended configuration checks presentation imports in `src/**/*.ui.{tsx,jsx}`, service imports under `src/**/services/`, and limits each folder under `src/` to one `.view` source file. Colocated tests and stories don't count toward that limit. For optional TypeScript React file and folder enforcement, use the `createLrsConfig({ root })` preset described in the [plugin documentation](packages/eslint/README.md#optional-application-structure). That documentation also covers custom rule scopes, upgrading folders with multiple views, and the limits of these checks.
 
 ## Repository layout
 

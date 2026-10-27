@@ -428,11 +428,13 @@
         lrs-eslint-plugin as a development dependency using pnpm; composes its
         configuration with the existing parser and rules; describes
         lrs.configs.recommended as checking imports in src/**/*.ui.{tsx,jsx} and
-        src/**/services/; and describes createLrsConfig as adding the TypeScript
+        src/**/services/ and limiting each folder under src/ to one production
+        .view source file (colocated tests and stories don't count); and
+        describes createLrsConfig as adding the TypeScript
         React file/folder policy, with root set to the absolute application
         directory /repo/apps/shop rather than its src directory. Because this
         task states that the structural policy fits, recommending that helper
-        is appropriate. The answer must explain that rules inspect module paths
+        is appropriate. The answer must explain that import rules inspect module paths
         without tracing the dependency graph, so opaque aliases and indirect
         barrels need manual review. Fail promising full transitive dependency
         analysis, replacing the project's parser/rules, treating the plugin as
