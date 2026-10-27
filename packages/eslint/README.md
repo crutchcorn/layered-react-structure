@@ -1,6 +1,6 @@
 # LRS ESLint rules
 
-[`lrs-eslint-plugin`](https://www.npmjs.com/package/lrs-eslint-plugin) enforces the import boundaries in [Layered React Structure](https://playfulprogramming.com/posts/layered-react-structure) and limits each folder to one `.view` source file. It ships an ESM bundle and TypeScript declarations built with [tsdown](https://tsdown.dev/). Consumers can use it directly without a build step.
+[`lrs-eslint-plugin`](https://www.npmjs.com/package/lrs-eslint-plugin) enforces the import boundaries in [Layered React Structure](https://playfulprogramming.com/posts/layered-react-structure) and limits each folder to one `.view` source file and one `.logic.ts` file. It ships an ESM bundle and TypeScript declarations built with [tsdown](https://tsdown.dev/). Consumers can use it directly without a build step.
 
 Install it in your React project:
 
@@ -27,6 +27,7 @@ The consumer supplies its JavaScript/TypeScript parser and JSX configuration. Pa
 | `lrs/presentation-imports` | `src/**/*.ui.{tsx,jsx}`                                | `services` and `hooks` path segments, `.view` components, all `@tanstack/*` packages          |
 | `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` path segments, `.view` and `.ui` components |
 | `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                          |
+| `lrs/one-logic-per-folder` | `src/**/*.logic.ts`                                    | More than one `.logic.ts` file in the same folder                                             |
 
 Presentational components may import React, plain types, utilities, constants, and other presentation components. Services may import framework-independent tools such as `@tanstack/query-core`, other services, and plain types. Type-only imports are subject to the same boundaries: move shared types into a `types` module instead of importing them through a service or component.
 
@@ -48,19 +49,23 @@ export default [
 
 From the repository root, run `pnpm nx test:lib lrs-eslint-plugin` for the TypeScript Vitest suite, including RuleTester, flat-configuration, and packed-package consumer tests. Nx builds the plugin first. Run `pnpm nx test:types lrs-eslint-plugin` to typecheck the source and tests, and `pnpm nx test:eslint lrs-eslint-plugin` to lint the package.
 
-The declarations cover the default plugin, `configs.recommended`, all three rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
+The declarations cover the default plugin, `configs.recommended`, all four rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
 
-## One view file per folder
+## One view and one logic file per folder
 
 `lrs/one-view-per-folder` keeps each folder's application orchestration in one place. For example, `people.view.tsx` and `edit-person.view.tsx` cannot share a folder. Files such as `people.view.test.tsx`, `people.view.spec.tsx`, and `people.view.stories.tsx` don't count. Views in separate folders have independent limits, and a folder may contain no view files.
 
-The rule checks the linted file's immediate folder on disk and includes the current filename when it hasn't been saved yet. It reports every conflicting view, so linting just one file still detects its siblings. ESLint's `--cache` can reuse a result without running the rule when only a sibling changes; run without `--cache` after adding, removing, or renaming views.
+`lrs/one-logic-per-folder` applies a separate limit to `.logic.ts` files. A folder may contain both `people.view.tsx` and `people.logic.ts`, but adding `edit-person.logic.ts` there reports an error. Files such as `people.logic.test.ts` and `people.logic.spec.ts` don't count. If `people.logic.ts` needs further decomposition, extract that behavior into the same folder's `hooks/`, such as `hooks/use-edit-person.ts`.
+
+Both rules check the linted file's immediate folder on disk and include the current filename when it hasn't been saved yet. They report every conflicting file, so linting just one file still detects its siblings. ESLint's `--cache` can reuse a result without running a rule when only a sibling changes; run without `--cache` after adding, removing, or renaming view or logic files.
 
 When upgrading a project that uses `configs.recommended` or `createLrsConfig`, folders with multiple `.view` files will start reporting errors. Keep one orchestration view per folder and move reusable React behavior into `hooks/`, I/O into `services/`, and pure business calculations into `utils/`. Give an independently composed view its own feature folder and update its imports. Renaming a component to `.ui` is appropriate only after its business logic has moved into the owning view or application layers.
 
+Folders with multiple `.logic.ts` files also start reporting errors. Keep one logic file and move further decomposition into that folder's `hooks/`, then update its imports. The file-count rules enforce these limits; they don't determine whether the code inside each file belongs in its layer.
+
 ## Optional application structure
 
-`createLrsConfig({ root })` combines the recommended import boundaries and one-view-per-folder rule with a TypeScript React application's file and folder policy through [`eslint-plugin-project-structure`](https://github.com/Igorkowalski94/eslint-plugin-project-structure). Use this single preset for the full LRS policy. Applications that use another folder layout can still use the default plugin's `configs.recommended` array shown above.
+`createLrsConfig({ root })` combines the recommended import boundaries and view/logic file limits with a TypeScript React application's file and folder policy through [`eslint-plugin-project-structure`](https://github.com/Igorkowalski94/eslint-plugin-project-structure). Use this single preset for the full LRS policy. Applications that use another folder layout can still use the default plugin's `configs.recommended` array shown above.
 
 ```js
 import tseslint from 'typescript-eslint'
@@ -74,20 +79,20 @@ export default tseslint.config(
 
 `root` must be the absolute application directory containing `src`; `import.meta.dirname` supplies it from the consuming ESLint config. The upstream plugin otherwise derives its root from its installation path, which resolves to the workspace root under pnpm and can silently skip an application's files. The factory scopes all recommended rules and the folder checker to the explicit root, independently of the command's working directory. Configuration files, public assets, end-to-end tests outside `src`, and sibling applications are outside this policy.
 
-| Location                         | Accepted contents                                                                            |
-| -------------------------------- | -------------------------------------------------------------------------------------------- |
-| `src`                            | Shared layers, `views`, `app.tsx`, `main.tsx`, their tests, `vite-env.d.ts`, and styles      |
-| `src/views/<feature>`            | At most one `*.view.tsx`, `*.ui.tsx`, tests, stories, styles, `index.ts`, and feature layers |
-| `components`                     | Components (`*.tsx`, optionally `*.ui.tsx`), tests, stories, styles, and barrels             |
-| `hooks`                          | `use-*.ts`, hook tests, and barrels                                                          |
-| `services`, `constants`, `utils` | TypeScript modules, tests, and barrels                                                       |
-| `types`                          | TypeScript modules and declarations such as `svg.d.ts`                                       |
-| `services/schemas`               | Generated `*.d.ts` schemas and an optional barrel                                            |
-| `assets`                         | Images, fonts, media, WebAssembly, and JSON                                                  |
+| Location                         | Accepted contents                                                                                                 |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `src`                            | Shared layers, `views`, `app.tsx`, `main.tsx`, their tests, `vite-env.d.ts`, and styles                           |
+| `src/views/<feature>`            | At most one `*.view.tsx` and one `*.logic.ts`; `*.ui.tsx`, tests, stories, styles, `index.ts`, and feature layers |
+| `components`                     | Components (`*.tsx`, optionally `*.ui.tsx`), tests, stories, styles, and barrels                                  |
+| `hooks`                          | `use-*.ts`, hook tests, and barrels                                                                               |
+| `services`, `constants`, `utils` | TypeScript modules, tests, and barrels                                                                            |
+| `types`                          | TypeScript modules and declarations such as `svg.d.ts`                                                            |
+| `services/schemas`               | Generated `*.d.ts` schemas and an optional barrel                                                                 |
+| `assets`                         | Images, fonts, media, WebAssembly, and JSON                                                                       |
 
 The same layer directories are available at the shared and feature level. Features, nested layer directories, and filenames use lowercase kebab case. Layer directories may be nested for related responsibilities; arbitrary directories directly under `src` or a feature are rejected. New features and modules do not require adding their names to the configuration.
 
-Tests may use `.spec.ts`, `.test.ts`, `.spec.tsx`, or `.test.tsx`, including component role suffixes such as `results.ui.spec.tsx`. Stories use `.stories.tsx`. CSS, Sass, and Less can be colocated with components or features, including `*.module.css`. Production JSX belongs to views or components, with `app.tsx` and `main.tsx` as entry points. The `utils/testing-utils` directory also permits JSX render helpers and provider wrappers for tests.
+Tests may use `.spec.ts`, `.test.ts`, `.spec.tsx`, or `.test.tsx`, including role suffixes such as `results.ui.spec.tsx` and `results.logic.test.ts`. Stories use `.stories.tsx`. CSS, Sass, and Less can be colocated with components or features, including `*.module.css`. Production JSX belongs to views or components, with `app.tsx` and `main.tsx` as entry points. The `utils/testing-utils` directory also permits JSX render helpers and provider wrappers for tests.
 
 The factory preserves the application's TypeScript/JavaScript parser and import rules. Its path-only parser applies to other extensions so CSS, SVG, unknown extensions, and extensionless files are checked too. Scope additional code-analysis configurations to their relevant code extensions, particularly rules that require TypeScript parser services.
 

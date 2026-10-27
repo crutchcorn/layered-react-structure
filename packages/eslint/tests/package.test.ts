@@ -130,6 +130,7 @@ test('published tarball supports ESM and strict TypeScript consumers', (context)
   ).toEqual({
     importRuleIds: ['lrs/service-imports'],
     viewRuleIds: ['lrs/one-view-per-folder'],
+    logicRuleIds: ['lrs/one-logic-per-folder'],
     structureRuleIds: ['project-structure/folder-structure'],
   })
 

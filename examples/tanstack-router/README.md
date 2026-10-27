@@ -37,7 +37,7 @@ Search and status filters live in URL search parameters (`q` and `status`). Inva
 | `src/utils/`                   | Pure validation, task transformations, and URL parsing                           |
 | `src/types/`, `src/constants/` | Shared domain contracts and fixed values                                         |
 
-The workspace `lrs-eslint-plugin` checks presentation and service import boundaries and allows at most one `.view` source file per folder. The shell and route-status views each have their own folder. Its optional strict folder preset is intentionally not enabled because TanStack Router owns the `routes/` and generated filenames. Router links enter presentational components through slots, keeping navigation in views.
+The workspace `lrs-eslint-plugin` checks presentation and service import boundaries and allows at most one `.view` source file and one `.logic.ts` file per folder. Further decomposition of a logic file belongs in that folder's `hooks/`. The shell and route-status views each have their own folder. Its optional strict folder preset is intentionally not enabled because TanStack Router owns the `routes/` and generated filenames. Router links enter presentational components through slots, keeping navigation in views.
 
 Styles are scoped with colocated `.module.css` files. Shared presentation classes live in `src/styles.module.css`; its explicit `:global(...)` selectors provide the document reset, theme, and accessibility defaults.
 

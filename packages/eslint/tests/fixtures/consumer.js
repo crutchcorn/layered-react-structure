@@ -18,6 +18,11 @@ const [viewResult] = await eslint.lintText('export const people = []', {
   filePath: 'src/views/people/people.view.js',
 })
 
+writeFileSync('src/views/people/edit-person.logic.ts', '')
+const [logicResult] = await eslint.lintText('export const people = []', {
+  filePath: 'src/views/people/people.logic.ts',
+})
+
 // The combined configuration also loads the structure checker's runtime dependency.
 const combined = new ESLint({
   overrideConfigFile: true,
@@ -32,6 +37,7 @@ process.stdout.write(
   JSON.stringify({
     importRuleIds: result?.messages.map((message) => message.ruleId),
     viewRuleIds: viewResult?.messages.map((message) => message.ruleId),
+    logicRuleIds: logicResult?.messages.map((message) => message.ruleId),
     structureRuleIds: structureResult?.messages.map(
       (message) => message.ruleId,
     ),

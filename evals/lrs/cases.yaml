@@ -409,6 +409,7 @@
 
       Representative files:
       src/views/catalog/catalog.view.tsx
+      src/views/catalog/catalog.logic.ts
       src/views/catalog/catalog.ui.tsx
       src/services/products.ts
       src/types/product.ts
@@ -417,7 +418,8 @@
       @catalog-data is an alias to a barrel that ultimately re-exports a view's
       application hook. Explain whether the lint plugin alone can reliably
       identify every such dependency violation. Distinguish required LRS
-      boundaries from optional tooling choices.
+      boundaries from optional tooling choices. Explain where further
+      decomposition of catalog.logic.ts belongs.
   assert:
     - type: llm-rubric
       value: |
@@ -428,8 +430,10 @@
         lrs-eslint-plugin as a development dependency using pnpm; composes its
         configuration with the existing parser and rules; describes
         lrs.configs.recommended as checking imports in src/**/*.ui.{tsx,jsx} and
-        src/**/services/ and limiting each folder under src/ to one production
-        .view source file (colocated tests and stories don't count); and
+        src/**/services/ and independently limiting each folder under src/ to
+        one production .view source file and one .logic.ts file (colocated tests
+        and stories don't count); directs further decomposition of
+        catalog.logic.ts into that feature folder's hooks/; and
         describes createLrsConfig as adding the TypeScript
         React file/folder policy, with root set to the absolute application
         directory /repo/apps/shop rather than its src directory. Because this
