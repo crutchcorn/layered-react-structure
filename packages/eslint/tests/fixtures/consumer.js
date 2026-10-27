@@ -1,3 +1,4 @@
+import { mkdirSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { ESLint } from 'eslint'
 import { defineConfig } from 'eslint/config'
@@ -9,6 +10,17 @@ const eslint = new ESLint({
 })
 const [result] = await eslint.lintText("import React from 'react'", {
   filePath: 'src/services/request.js',
+})
+
+mkdirSync('src/views/people', { recursive: true })
+writeFileSync('src/views/people/edit-person.view.js', '')
+const [viewResult] = await eslint.lintText('export const people = []', {
+  filePath: 'src/views/people/people.view.js',
+})
+
+writeFileSync('src/views/people/edit-person.logic.ts', '')
+const [logicResult] = await eslint.lintText('export const people = []', {
+  filePath: 'src/views/people/people.logic.ts',
 })
 
 // The combined configuration also loads the structure checker's runtime dependency.
@@ -24,6 +36,8 @@ const [structureResult] = await combined.lintText('export const value = 1', {
 process.stdout.write(
   JSON.stringify({
     importRuleIds: result?.messages.map((message) => message.ruleId),
+    viewRuleIds: viewResult?.messages.map((message) => message.ruleId),
+    logicRuleIds: logicResult?.messages.map((message) => message.ruleId),
     structureRuleIds: structureResult?.messages.map(
       (message) => message.ruleId,
     ),

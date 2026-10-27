@@ -129,6 +129,8 @@ test('published tarball supports ESM and strict TypeScript consumers', (context)
     JSON.parse(run(process.execPath, ['consumer.js'], consumerDirectory)),
   ).toEqual({
     importRuleIds: ['lrs/service-imports'],
+    viewRuleIds: ['lrs/one-view-per-folder'],
+    logicRuleIds: ['lrs/one-logic-per-folder'],
     structureRuleIds: ['project-structure/folder-structure'],
   })
 

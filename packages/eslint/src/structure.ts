@@ -29,7 +29,7 @@ const kebabName = '{kebab-case}'
 const moduleFile = { name: `${kebabName}.ts` }
 const declarations = { name: `${kebabName}.d.ts` }
 const barrel = { name: 'index.ts' }
-const tests = { name: `${kebabName}(.(ui|view))?.(spec|test).(ts|tsx)` }
+const tests = { name: `${kebabName}(.(ui|view|logic))?.(spec|test).(ts|tsx)` }
 const stories = { name: `${kebabName}(.(ui|view))?.stories.tsx` }
 const styles = { name: `${kebabName}(.module)?.(css|scss|sass|less)` }
 
@@ -91,6 +91,7 @@ function createLrsFolderStructure(root: string) {
             name: kebabName,
             children: [
               { name: `${kebabName}.(view|ui).tsx` },
+              { name: `${kebabName}.logic.ts` },
               tests,
               stories,
               styles,
