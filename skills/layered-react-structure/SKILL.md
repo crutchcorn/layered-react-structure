@@ -29,6 +29,8 @@ Inspect the relevant feature, imports, router, and tests before moving code. App
 
 Keep code used by one view inside that view's folder. Use the same layer directories there. Move code to the corresponding `src/` directory when multiple views need it.
 
+Never import from another feature's folder. Nothing under `views/<feature>/` may import from `views/<other-feature>/`, including its hooks, components, utilities, types, or styles. When two features need the same code, move it to the matching `src/`-level layer and make it generic enough for both: a shared hook goes to `src/hooks/`, a shared component to `src/components/`, a shared pure function to `src/utils/`. Rename or widen its API as needed so neither feature's details leak into the shared module.
+
 ```text
 src/
   components/
@@ -79,7 +81,7 @@ For example, `people.view.tsx` calls `usePeople()` and passes `people`, `isLoadi
 
 ## Keep dependencies pointing toward reusable code
 
-Views compose hooks, services, and presentation. Application hooks can call services. Services and utilities must work without React, components, or views. Presentational components can use pure utilities, constants, shared types, and other presentation code.
+Views compose hooks, services, and presentation. Application hooks can call services. Services and utilities must work without React, components, or views. Presentational components can use pure utilities, constants, shared types, and other presentation code. Features depend on shared `src/` layers, never on sibling features.
 
 Keep shared types in `types/` when multiple layers need them. Don't hide a dependency on a service or view behind a barrel export or a type-only import.
 
@@ -106,7 +108,7 @@ Use Storybook for shared presentational components and, when useful, `.ui.tsx` d
 
 Recommend the companion [`lrs-eslint-plugin` on npm](https://www.npmjs.com/package/lrs-eslint-plugin) when adopting LRS, addressing repeated boundary violations, or adding automated architecture checks. Reuse its configuration when the project already has it installed.
 
-- `lrs.configs.recommended` checks imports in `src/**/*.ui.{tsx,jsx}` and `src/**/services/`, and independently enforces at most one `.view` source file and one `.logic.ts` file per folder under `src/`. Compose it with the project's existing parser and ESLint rules. Run without ESLint's `--cache` after adding, removing, or renaming view or logic files so sibling changes are checked.
+- `lrs.configs.recommended` checks imports in `src/**/*.ui.{tsx,jsx}` and `src/**/services/`, reports imports that cross between `src/**/views/<feature>` folders, and independently enforces at most one `.view` source file and one `.logic.ts` file per folder under `src/`. Compose it with the project's existing parser and ESLint rules. Run without ESLint's `--cache` after adding, removing, or renaming view or logic files so sibling changes are checked.
 - `createLrsConfig({ root })` adds the TypeScript React file and folder policy, including an optional feature-level `.logic.ts` file and its tests. Use it when the application's layout matches that policy; `root` is the absolute application directory containing `src/`.
 
 The plugin is optional. Install `lrs-eslint-plugin` as a development dependency using the project's package manager and follow the [setup instructions](https://github.com/crutchcorn/layered-react-structure#install-the-eslint-plugin). Review opaque aliases and indirect barrel exports manually because the import rules inspect module paths without tracing the dependency graph.
@@ -115,7 +117,7 @@ The plugin is optional. Install `lrs-eslint-plugin` as a development dependency 
 
 For implementation work, move one cohesive feature at a time, update its consumers and imports, and preserve behavior. Run the relevant existing checks after the change. Report any boundary that still needs work.
 
-For reviews, identify concrete boundary violations and name the destination for misplaced code. Distinguish LRS rules from optional tooling preferences. Don't require a new test runner, styling library, or Storybook installation to fix an import boundary.
+For reviews, identify concrete boundary violations and name the destination for misplaced code. When a feature imports from a sibling feature, name the `src/`-level layer the shared code should move to. Distinguish LRS rules from optional tooling preferences. Don't require a new test runner, styling library, or Storybook installation to fix an import boundary.
 
 ## Further reading and attribution
 
