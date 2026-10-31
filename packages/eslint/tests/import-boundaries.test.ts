@@ -174,6 +174,163 @@ tester.run('service-imports', plugin.rules['service-imports'], {
   ],
 })
 
+const chatView = 'src/views/chat/chat.view.tsx'
+
+function invalidIn(
+  filename: string,
+  code: string,
+  source: string,
+): RuleTester.InvalidTestCase {
+  return { ...invalid(code, source), filename }
+}
+
+tester.run('feature-imports', plugin.rules['feature-imports'], {
+  valid: [
+    {
+      filename: chatView,
+      code: "import { useChat } from './hooks/use-chat'; import { ChatUI } from './chat.ui'; import styles from './chat.module.css';",
+    },
+    {
+      filename: chatView,
+      code: "import { useAuth } from '../../hooks/use-auth'; import { Button } from '../../components/button'; import { request } from '../../services/http';",
+    },
+    {
+      filename: 'src/views/chat/components/message.tsx',
+      code: "import type { Message } from '../../../types/chat'; import { formatTime } from '../../../utils/time';",
+    },
+    {
+      filename: chatView,
+      code: "import { useAuth } from '@/hooks/use-auth'; import { ChatUI } from '@/views/chat/chat.ui'; import { usePeople } from '#app/views/chat/hooks/use-people';",
+    },
+    {
+      filename: chatView,
+      code: "import { useState } from 'react'; import { useQuery } from '@tanstack/react-query'; import { icons } from 'react-views/icons';",
+    },
+    {
+      filename: chatView,
+      code: "import { usePeople } from '../../views/chat/hooks/use-people';",
+    },
+    {
+      filename: 'src/views/chat/views/thread/thread.view.tsx',
+      code: "import { useChat } from '../../hooks/use-chat'; import { ChatUI } from '../../chat.ui';",
+    },
+    {
+      filename: chatView,
+      code: "import { ThreadView } from './views/thread/thread.view';",
+    },
+    {
+      filename: chatView,
+      code: "const people = import('../people/' + name); const view = require(moduleName);",
+    },
+    {
+      filename: 'C:\\project\\src\\views\\chat\\chat.view.tsx',
+      code: "import { ChatUI } from './chat.ui'; import { useAuth } from '../../hooks/use-auth';",
+    },
+    // Shared layers importing a feature are outside this rule's scope.
+    {
+      filename: 'src/components/person-card.tsx',
+      code: "import { PeopleUI } from '../views/people/people.ui';",
+    },
+    {
+      filename: 'src/views/index.ts',
+      code: "export { ChatView } from './chat/chat.view'; export { PeopleView } from './people/people.view';",
+    },
+  ],
+  invalid: [
+    invalidIn(
+      chatView,
+      "import { usePeople } from '../people/hooks/use-people';",
+      '../people/hooks/use-people',
+    ),
+    invalidIn(
+      'src/views/chat/chat.ui.tsx',
+      "import { PersonCard } from '../people/components/person-card';",
+      '../people/components/person-card',
+    ),
+    invalidIn(
+      chatView,
+      "import { PeopleView } from '../people/people.view';",
+      '../people/people.view',
+    ),
+    invalidIn(chatView, "import { people } from '../people';", '../people'),
+    invalidIn(
+      'src/views/chat/components/message.tsx',
+      "import { formatName } from '../../people/utils/format-name';",
+      '../../people/utils/format-name',
+    ),
+    invalidIn(
+      'src/views/chat/hooks/use-chat.ts',
+      "import { usePeople } from '../../people/hooks/use-people';",
+      '../../people/hooks/use-people',
+    ),
+    invalidIn(
+      chatView,
+      "import { usePeople } from '../../views/people/hooks/use-people';",
+      '../../views/people/hooks/use-people',
+    ),
+    invalidIn(
+      chatView,
+      "import { usePeople } from '@/views/people/hooks/use-people';",
+      '@/views/people/hooks/use-people',
+    ),
+    invalidIn(
+      chatView,
+      "import { usePeople } from '#app/views/people/hooks/use-people';",
+      '#app/views/people/hooks/use-people',
+    ),
+    invalidIn(
+      chatView,
+      "import styles from '../people/people.module.css';",
+      '../people/people.module.css',
+    ),
+    invalidIn(
+      chatView,
+      "import type { Person } from '../people/types/person';",
+      '../people/types/person',
+    ),
+    invalidIn(
+      chatView,
+      "export * from '../people/hooks/use-people';",
+      '../people/hooks/use-people',
+    ),
+    invalidIn(
+      chatView,
+      "export { PeopleView } from '../people/people.view.tsx';",
+      '../people/people.view.tsx',
+    ),
+    invalidIn(
+      chatView,
+      "const people = import('../people/people.view');",
+      '../people/people.view',
+    ),
+    invalidIn(
+      chatView,
+      "const people = require('../people/people.view');",
+      '../people/people.view',
+    ),
+    invalidIn(
+      chatView,
+      "type Person = import('../people/types/person').Person;",
+      '../people/types/person',
+    ),
+    invalidIn(
+      chatView,
+      "import view from '../people/people.view.tsx?raw';",
+      '../people/people.view.tsx?raw',
+    ),
+    invalidIn(
+      'src/views/chat/views/thread/thread.view.tsx',
+      "import { useSearch } from '../search/hooks/use-search';",
+      '../search/hooks/use-search',
+    ),
+    invalidIn(
+      'C:\\project\\src\\views\\chat\\chat.view.tsx',
+      String.raw`import { PeopleView } from '..\\people\\people.view';`,
+      String.raw`..\people\people.view`,
+    ),
+  ],
+})
+
 const baseConfig: Linter.Config = {
   files: ['**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
   languageOptions,
@@ -181,7 +338,7 @@ const baseConfig: Linter.Config = {
 
 test('JavaScript consumers can use the default ESLint parser', () => {
   const messages = new Linter().verify(
-    "import React from 'react'; const service = import('../services/client'); export const View = () => <div />;",
+    "import React from 'react'; const service = import('../../services/client'); export const View = () => <div />;",
     [
       { languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
       ...plugin.configs.recommended,
@@ -205,7 +362,7 @@ test('recommended configuration scopes both layers without replacing application
   ]
 
   const messages = linter.verify(
-    "import secret from 'app-forbidden'; import service from '../services/chat';",
+    "import secret from 'app-forbidden'; import service from '../../services/chat';",
     config,
     { filename: 'src/views/chat/chat.ui.tsx' },
   )
@@ -251,13 +408,30 @@ for (const extension of sourceExtensions) {
 }
 
 for (const filename of [
+  'src/views/chat/chat.view.tsx',
+  'src/views/chat/chat.ui.jsx',
+  'src/views/chat/hooks/use-chat.ts',
+  'src/views/chat/components/message.tsx',
+]) {
+  test(`recommended feature rule applies to ${filename}`, () => {
+    const messages = new Linter().verify(
+      "import { PeopleUI } from '@/views/people/people.ui';",
+      [baseConfig, ...plugin.configs.recommended],
+      { filename },
+    )
+    expect(messages).toHaveLength(1)
+    expect(messages[0]?.ruleId).toBe('lrs/feature-imports')
+  })
+}
+
+for (const filename of [
   'src/hooks/use-chat.ts',
   'src/views/chat/chat.view.tsx',
   'test-fixtures/chat.ui.tsx',
 ]) {
-  test(`recommended boundaries leave ${filename} outside their scope`, () => {
+  test(`recommended boundaries report nothing for ${filename}`, () => {
     const messages = new Linter().verify(
-      "import { useQuery } from '@tanstack/react-query'; import { request } from '../services/http';",
+      "import { useQuery } from '@tanstack/react-query'; import { request } from '@/services/http';",
       [baseConfig, ...plugin.configs.recommended],
       { filename },
     )
