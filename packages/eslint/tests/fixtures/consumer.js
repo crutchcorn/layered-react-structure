@@ -23,6 +23,11 @@ const [logicResult] = await eslint.lintText('export const people = []', {
   filePath: 'src/views/people/people.logic.ts',
 })
 
+const [featureResult] = await eslint.lintText(
+  "import { usePeople } from '../people/hooks/use-people'",
+  { filePath: 'src/views/chat/chat.view.js' },
+)
+
 // The combined configuration also loads the structure checker's runtime dependency.
 const combined = new ESLint({
   overrideConfigFile: true,
@@ -38,6 +43,7 @@ process.stdout.write(
     importRuleIds: result?.messages.map((message) => message.ruleId),
     viewRuleIds: viewResult?.messages.map((message) => message.ruleId),
     logicRuleIds: logicResult?.messages.map((message) => message.ruleId),
+    featureRuleIds: featureResult?.messages.map((message) => message.ruleId),
     structureRuleIds: structureResult?.messages.map(
       (message) => message.ruleId,
     ),

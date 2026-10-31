@@ -6,10 +6,10 @@ Read [Scale Your Project with Layered React Structure](https://playfulprogrammin
 
 This repository contains tools for adopting and enforcing LRS. Use them together or independently:
 
-| Tool                                                             | Purpose                                                                                                                              |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [Agent skill](skills/layered-react-structure/SKILL.md)           | Guide your coding agent when building, refactoring, or reviewing React features.                                                     |
-| [ESLint plugin](https://www.npmjs.com/package/lrs-eslint-plugin) | Check import boundaries, limit each folder to one view and one logic file, and optionally enforce the LRS file and folder structure. |
+| Tool                                                             | Purpose                                                                                                                                                              |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Agent skill](skills/layered-react-structure/SKILL.md)           | Guide your coding agent when building, refactoring, or reviewing React features.                                                                                     |
+| [ESLint plugin](https://www.npmjs.com/package/lrs-eslint-plugin) | Check import boundaries, keep view features independent, limit each folder to one view and one logic file, and optionally enforce the LRS file and folder structure. |
 
 ## Install the skill
 
@@ -56,7 +56,7 @@ If you already have an ESLint configuration, keep its parser and rules and appen
 npx eslint src
 ```
 
-The recommended configuration checks presentation imports in `src/**/*.ui.{tsx,jsx}`, service imports under `src/**/services/`, and limits each folder under `src/` to one `.view` source file and one `.logic.ts` file. These limits are independent; colocated tests and stories don't count. Break down a logic file further in that folder's `hooks/`. For optional TypeScript React file and folder enforcement, use the `createLrsConfig({ root })` preset described in the [plugin documentation](packages/eslint/README.md#optional-application-structure). That documentation also covers custom rule scopes, upgrading folders with multiple view or logic files, and the limits of these checks.
+The recommended configuration checks presentation imports in `src/**/*.ui.{tsx,jsx}`, service imports under `src/**/services/`, cross-feature imports under `src/**/views/`, and limits each folder under `src/` to one `.view` source file and one `.logic.ts` file. These limits are independent; colocated tests and stories don't count. Break down a logic file further in that folder's `hooks/`. Move code that several features share to the matching `src/`-level layer instead of importing it from another feature. For optional TypeScript React file and folder enforcement, use the `createLrsConfig({ root })` preset described in the [plugin documentation](packages/eslint/README.md#optional-application-structure). That documentation also covers custom rule scopes, upgrading folders with multiple view or logic files, and the limits of these checks.
 
 ## Repository layout
 

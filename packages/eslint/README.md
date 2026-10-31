@@ -1,6 +1,6 @@
 # LRS ESLint rules
 
-[`lrs-eslint-plugin`](https://www.npmjs.com/package/lrs-eslint-plugin) enforces the import boundaries in [Layered React Structure](https://playfulprogramming.com/posts/layered-react-structure) and limits each folder to one `.view` source file and one `.logic.ts` file. It ships an ESM bundle and TypeScript declarations built with [tsdown](https://tsdown.dev/). Consumers can use it directly without a build step.
+[`lrs-eslint-plugin`](https://www.npmjs.com/package/lrs-eslint-plugin) enforces the import boundaries in [Layered React Structure](https://playfulprogramming.com/posts/layered-react-structure), keeps each view feature independent of its siblings, and limits each folder to one `.view` source file and one `.logic.ts` file. It ships an ESM bundle and TypeScript declarations built with [tsdown](https://tsdown.dev/). Consumers can use it directly without a build step.
 
 Install it in your React project:
 
@@ -26,6 +26,7 @@ The consumer supplies its JavaScript/TypeScript parser and JSX configuration. Pa
 | -------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | `lrs/presentation-imports` | `src/**/*.ui.{tsx,jsx}`                                | `services` and `hooks` path segments, `.view` components, all `@tanstack/*` packages          |
 | `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` path segments, `.view` and `.ui` components |
+| `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | Imports that resolve into a different `views/<feature>` folder                                |
 | `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                          |
 | `lrs/one-logic-per-folder` | `src/**/*.logic.ts`                                    | More than one `.logic.ts` file in the same folder                                             |
 
@@ -49,7 +50,15 @@ export default [
 
 From the repository root, run `pnpm nx test:lib lrs-eslint-plugin` for the TypeScript Vitest suite, including RuleTester, flat-configuration, and packed-package consumer tests. Nx builds the plugin first. Run `pnpm nx test:types lrs-eslint-plugin` to typecheck the source and tests, and `pnpm nx test:eslint lrs-eslint-plugin` to lint the package.
 
-The declarations cover the default plugin, `configs.recommended`, all four rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
+The declarations cover the default plugin, `configs.recommended`, all five rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
+
+## Keep features independent
+
+`lrs/feature-imports` applies to every source file inside a `views/<feature>` folder, including its `.view`, `.ui`, and `.logic` files and its nested `hooks/`, `components/`, `services/`, and other layers. It reports any import whose module path resolves into a different feature folder, such as `../people/hooks/use-people` or `@/views/people/people.ui` from `src/views/chat/chat.view.tsx`. Imports within the same feature and imports of the shared `src/` layers are allowed.
+
+When two features need the same hook, component, utility, service, or type, move it to the matching `src/`-level layer and make it generic enough for both consumers instead of importing across features. For example, a `usePeople` hook that `chat` and `people` both call belongs in `src/hooks/use-people.ts`, not in `src/views/people/hooks/`.
+
+The rule resolves relative specifiers against the linted file's path and, like the other import rules, otherwise reads the `views/<feature>` segments from the specifier itself. It does not check shared layers that import a feature; `src/components/person-card.tsx` importing `../views/people/people.ui` is a separate review item. Nested `views/` folders inside a feature are treated as sub-features: they may import from their ancestors and descendants, but not from a sibling sub-feature.
 
 ## One view and one logic file per folder
 
@@ -65,7 +74,7 @@ Folders with multiple `.logic.ts` files also start reporting errors. Keep one lo
 
 ## Optional application structure
 
-`createLrsConfig({ root })` combines the recommended import boundaries and view/logic file limits with a TypeScript React application's file and folder policy through [`eslint-plugin-project-structure`](https://github.com/Igorkowalski94/eslint-plugin-project-structure). Use this single preset for the full LRS policy. Applications that use another folder layout can still use the default plugin's `configs.recommended` array shown above.
+`createLrsConfig({ root })` combines the recommended import boundaries, feature isolation, and view/logic file limits with a TypeScript React application's file and folder policy through [`eslint-plugin-project-structure`](https://github.com/Igorkowalski94/eslint-plugin-project-structure). Use this single preset for the full LRS policy. Applications that use another folder layout can still use the default plugin's `configs.recommended` array shown above.
 
 ```js
 import tseslint from 'typescript-eslint'

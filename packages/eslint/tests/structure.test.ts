@@ -242,7 +242,7 @@ for (const outsideCwd of [false, true]) {
       ],
     })
     const code = `
-    import { request } from '../services/client';
+    import { request } from '../../services/client';
     const count: number = 1;
     export function Results() {
       console.log(request, count);
