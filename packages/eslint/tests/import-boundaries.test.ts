@@ -495,6 +495,22 @@ for (const filename of [
   })
 }
 
+for (const filename of [
+  'src/hooks/use-counter.ts',
+  'src/views/chat/hooks/use-counter.ts',
+]) {
+  test(`recommended hook-rendering rule applies to ${filename}`, () => {
+    const messages = new Linter().verify(
+      "import React from 'react'; export function useCounter() { return React.createElement('div'); }",
+      [baseConfig, ...plugin.configs.recommended],
+      { filename },
+    )
+    expect(messages.map((message) => message.ruleId)).toEqual([
+      'lrs/hook-rendering',
+    ])
+  })
+}
+
 for (const extension of sourceExtensions) {
   for (const directory of ['src/services', 'src/views/chat/services/nested']) {
     const filename = `${directory}/request.${extension}`

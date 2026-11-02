@@ -26,6 +26,7 @@ The consumer supplies its JavaScript/TypeScript parser and JSX configuration. Pa
 | -------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | `lrs/presentation-imports` | `.ui` modules and `components/` modules under `src/`   | `services` path segments, `hooks` path segments other than `.ui` hooks, `.view` and `.logic` modules, all `@tanstack/*` packages |
 | `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` and `components` path segments, `.view`, `.ui`, and `.logic` modules           |
+| `lrs/hook-rendering`       | `src/**/hooks/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | JSX and `React.createElement` rendering in hooks                                                                                 |
 | `lrs/utility-imports`      | `src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | `components`, `hooks`, `services`, and `views` path segments, `.view`, `.ui`, and `.logic` modules, runtime React imports        |
 | `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | Imports that resolve into a different `views/<feature>` folder                                                                   |
 | `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                                                             |
@@ -51,7 +52,7 @@ export default [
 
 From the repository root, run `pnpm nx test:lib lrs-eslint-plugin` for the TypeScript Vitest suite, including RuleTester, flat-configuration, and packed-package consumer tests. Nx builds the plugin first. Run `pnpm nx test:types lrs-eslint-plugin` to typecheck the source and tests, and `pnpm nx test:eslint lrs-eslint-plugin` to lint the package.
 
-The declarations cover the default plugin, `configs.recommended`, all five rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
+The declarations cover the default plugin, `configs.recommended`, all eight rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
 
 ## Keep features independent
 
