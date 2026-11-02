@@ -24,8 +24,10 @@ const serviceImports: TSESLint.RuleModule<'forbiddenImport', []> = {
         source.startsWith('react-dom/') ||
         source.startsWith('@tanstack/react-') ||
         isLayer(source, 'hooks') ||
+        isLayer(source, 'components') ||
         isComponent(source, 'view') ||
-        isComponent(source, 'ui'),
+        isComponent(source, 'ui') ||
+        isComponent(source, 'logic'),
     )
   },
 }

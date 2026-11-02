@@ -90,6 +90,7 @@ tester.run('presentation-imports', plugin.rules['presentation-imports'], {
     ),
     invalid("import { useChat } from '../hooks';", '../hooks'),
     invalid("import { ChatView } from './chat.view';", './chat.view'),
+    invalid("import { logic } from './chat.logic';", './chat.logic'),
     invalid(
       "import { QueryClient } from '@tanstack/query-core';",
       '@tanstack/query-core',
@@ -243,8 +244,13 @@ tester.run('service-imports', plugin.rules['service-imports'], {
       "import type { Chat } from '../hooks/use-chat';",
       '../hooks/use-chat',
     ),
+    invalid(
+      "import { Button } from '../components/button';",
+      '../components/button',
+    ),
     invalid("import { Chat } from '../chat.view';", '../chat.view'),
     invalid("import { Chat } from '../chat.ui';", '../chat.ui'),
+    invalid("import { logic } from '../chat.logic';", '../chat.logic'),
     invalid("export * from 'react';", 'react'),
     invalid("export type { ReactNode } from 'react';", 'react'),
     invalid("export * as ui from '../chat.ui.tsx';", '../chat.ui.tsx'),
@@ -474,6 +480,8 @@ for (const filename of [
   'src/chat.ui.tsx',
   'src/views/chat/chat.ui.tsx',
   'src/views/chat/chat.ui.jsx',
+  'src/components/button.tsx',
+  'src/views/chat/components/message.tsx',
   'src/hooks/use-media-query.ui.ts',
 ]) {
   test(`recommended presentation rule applies to ${filename}`, () => {
@@ -484,6 +492,22 @@ for (const filename of [
     )
     expect(messages).toHaveLength(1)
     expect(messages[0]?.ruleId).toBe('lrs/presentation-imports')
+  })
+}
+
+for (const filename of [
+  'src/hooks/use-counter.ts',
+  'src/views/chat/hooks/use-counter.ts',
+]) {
+  test(`recommended hook-rendering rule applies to ${filename}`, () => {
+    const messages = new Linter().verify(
+      "import React from 'react'; export function useCounter() { return React.createElement('div'); }",
+      [baseConfig, ...plugin.configs.recommended],
+      { filename },
+    )
+    expect(messages.map((message) => message.ruleId)).toEqual([
+      'lrs/hook-rendering',
+    ])
   })
 }
 
@@ -528,6 +552,41 @@ for (const filename of [
     const messages = new Linter().verify(
       "import { useQuery } from '@tanstack/react-query'; import { request } from '@/services/http';",
       [baseConfig, ...plugin.configs.recommended],
+      { filename },
+    )
+    expect(messages).toEqual([])
+  })
+}
+
+const ignoredBoundaryFiles = [
+  ['src/utils/normalize.test.ts', "import { useState } from 'react';"],
+  [
+    'src/components/button.stories.tsx',
+    "import { request } from '../services/request'; export const Button = () => null;",
+  ],
+  [
+    'src/hooks/use-state-test-support.ts',
+    "import React from 'react'; export const render = () => React.createElement('div');",
+  ],
+  [
+    'src/views/chat/chat.view.spec.tsx',
+    "import { PeopleView } from '../../people/people.view';",
+  ],
+  [
+    'src/services/request.test.ts',
+    "import React from 'react'; fetch('/test');",
+  ],
+  [
+    'src/views/chat/chat.ui.test.tsx',
+    "import { request } from '../../services/request'; fetch('/test');",
+  ],
+] as const
+
+for (const [filename, code] of ignoredBoundaryFiles) {
+  test(`recommended and strict presets ignore ${filename}`, () => {
+    const messages = new Linter().verify(
+      code,
+      [baseConfig, ...plugin.configs.recommended, ...plugin.configs.strict],
       { filename },
     )
     expect(messages).toEqual([])

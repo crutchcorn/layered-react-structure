@@ -58,7 +58,11 @@ function importedNames(
  */
 export function visitModuleSources(
   context: ImportRuleContext,
-  isForbidden: (source: string, names: string[] | undefined) => boolean,
+  isForbidden: (
+    source: string,
+    names: string[] | undefined,
+    node: TSESTree.Node,
+  ) => boolean,
 ): TSESLint.RuleListener {
   function check(
     node: TSESTree.Node | null | undefined,
@@ -68,7 +72,7 @@ export function visitModuleSources(
     const source = staticSource(node)
     if (
       source !== undefined &&
-      isForbidden(normalizeModuleSource(source), names)
+      isForbidden(normalizeModuleSource(source), names, node)
     ) {
       context.report({
         node,
@@ -176,7 +180,10 @@ export function staysInLayer(
   return true
 }
 
-export function isComponent(source: string, kind: 'view' | 'ui'): boolean {
+export function isComponent(
+  source: string,
+  kind: 'logic' | 'view' | 'ui',
+): boolean {
   // Extensionless imports and both source/output JavaScript extensions count.
   return new RegExp(`\\.${kind}(?:\\.[cm]?[jt]sx?)?$`, 'i').test(source)
 }

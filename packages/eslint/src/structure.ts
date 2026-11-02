@@ -7,10 +7,14 @@ import {
 } from 'eslint-plugin-project-structure'
 import projectStructurePlugin from './structure-plugin.js'
 
+type StructureIgnorePatterns = string | (string | string[])[]
+
 /** Options for the application file and folder structure policy. */
 export interface StructureConfigOptions {
   /** Absolute path to the application directory containing `src`. */
   root: string
+  /** Paths ignored only by the folder-structure check. */
+  ignorePatterns?: StructureIgnorePatterns
 }
 
 type StructureRuleId =
@@ -72,12 +76,16 @@ function layers(): StructureRule[] {
   ]
 }
 
-function createLrsFolderStructure(root: string) {
+function createLrsFolderStructure(
+  root: string,
+  ignorePatterns?: StructureConfigOptions['ignorePatterns'],
+) {
   return createFolderStructure({
     // An absolute path avoids upstream node_modules-based root discovery.
     projectRoot: root,
     structureRoot: 'src',
     longPathsInfo: false,
+    ignorePatterns,
     structure: [
       { name: '(app|main).tsx' },
       { name: '(app|main).(spec|test).tsx' },
@@ -134,6 +142,7 @@ function createLrsFolderStructure(root: string) {
 /** Create the optional TypeScript React application path policy. */
 export function createStructureConfig({
   root,
+  ignorePatterns,
 }: StructureConfigOptions): Linter.Config[] {
   if (typeof root !== 'string' || !path.isAbsolute(root)) {
     throw new TypeError(
@@ -152,7 +161,7 @@ export function createStructureConfig({
       rules: {
         'project-structure/folder-structure': [
           'error',
-          createLrsFolderStructure(root),
+          createLrsFolderStructure(root, ignorePatterns),
         ],
       },
     },

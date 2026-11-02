@@ -75,6 +75,7 @@ const presentationImports: TSESLint.RuleModule<
         // Hooks named *.ui follow this rule themselves, so they stay presentational.
         (inLayer('hooks') && !isComponent(source, 'ui')) ||
         isComponent(source, 'view') ||
+        isComponent(source, 'logic') ||
         source.startsWith('@tanstack/')
       if (!forbidden) return false
 

@@ -1,6 +1,6 @@
 import { formOptions } from '@tanstack/react-form'
-import { TodoInputSchema } from '../../../utils/todo-schema'
-import type { TodoInput } from '../../../types/todo'
+import { TodoInputSchema } from '../../utils/todo-schema'
+import type { TodoInput } from '../../types/todo'
 
 const defaultValues: TodoInput = {
   title: '',

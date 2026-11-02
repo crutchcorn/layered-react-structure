@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { StatusMessage } from '../../components/status-message'
+import { RouteErrorUI } from './route-status.ui'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 
 export function NotFoundView() {
@@ -17,11 +18,5 @@ export function NotFoundView() {
 }
 
 export function RouteErrorView({ reset }: ErrorComponentProps) {
-  return (
-    <StatusMessage
-      title="Something went wrong"
-      description="We couldn't open this page. Please try again."
-      action={<button onClick={reset}>Try again</button>}
-    />
-  )
+  return <RouteErrorUI onRetry={reset} />
 }

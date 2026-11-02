@@ -18,12 +18,13 @@ const structureRule = 'project-structure/folder-structure'
 
 interface FixtureOptions {
   outsideCwd?: boolean
+  ignorePatterns?: string[]
   additionalConfig?: (root: string) => Linter.Config[]
 }
 
 function createFixture(
   context: TestContext,
-  { outsideCwd = false, additionalConfig }: FixtureOptions = {},
+  { outsideCwd = false, ignorePatterns, additionalConfig }: FixtureOptions = {},
 ) {
   // The upstream plugin writes a diagnostic cache, so each test owns its root.
   const directory = mkdtempSync(path.join(tmpdir(), 'lrs-structure-'))
@@ -41,7 +42,7 @@ function createFixture(
         languageOptions: { parser: tseslint.parser },
       },
       ...(additionalConfig?.(root) ?? []),
-      ...createLrsConfig({ root }),
+      ...createLrsConfig({ root, ignorePatterns }),
     ],
   })
 
@@ -233,6 +234,25 @@ test('filesystem lint includes CSS, SVG, unknown extensions, and extensionless f
       filename,
     ).toEqual(expected.get(filename) ? [structureRule] : [])
   }
+})
+
+test('ignorePatterns only exempts matching paths from the structure policy', async (context) => {
+  const fixture = createFixture(context, {
+    ignorePatterns: ['routes/**', 'routeTree.gen.ts'],
+  })
+  expect((await fixture.lint('src/routes/router.ts')).messages).toEqual([])
+  expect((await fixture.lint('src/routeTree.gen.ts')).messages).toEqual([])
+  expect(
+    (await fixture.lint('src/data/unignored.ts')).messages[0]?.ruleId,
+  ).toBe(structureRule)
+  expect(
+    (
+      await fixture.lint(
+        'src/routes/router.ui.tsx',
+        "import { request } from '../services/request';",
+      )
+    ).messages.map((message) => message.ruleId),
+  ).toContain('lrs/presentation-imports')
 })
 
 for (const outsideCwd of [false, true]) {
