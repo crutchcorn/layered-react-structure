@@ -66,7 +66,7 @@ Presentational components can't import from `hooks/` because application hooks u
 
 Name a presentation-only hook with a `.ui` suffix, such as `src/hooks/use-disclosure.ui.ts`. `lrs/presentation-imports` allows `.ui` modules from `hooks/`, and the recommended configuration applies the same rule to the hook itself. A `.ui` hook can use React, utilities, constants, types, and other `.ui` hooks; importing an application hook, a service, or a TanStack package reports an error. Relative imports that stay inside a `hooks/` folder, such as `./use-settings`, count as hook imports.
 
-For a module you can't rename, or a package that is safe for presentation, list it in the rule's `allow` option:
+For a hook you can't rename, or one from a package such as `@tanstack/react-virtual`, list it in the rule's `allow` option:
 
 ```js
 export default [
@@ -76,14 +76,29 @@ export default [
     rules: {
       'lrs/presentation-imports': [
         'error',
-        { allow: ['src/hooks/use-theme', '@tanstack/react-virtual'] },
+        {
+          allow: [
+            { from: 'src/hooks/use-theme', hooks: ['useTheme'] },
+            { hooks: ['useVirtualizer'] },
+            { from: 'src/hooks/use-breakpoints' },
+          ],
+        },
       ],
     },
   },
 ]
 ```
 
-Each entry matches the end of an import path on whole segments, ignoring a source extension, so `hooks/use-theme` doesn't match `../hooks/use-theme-store`. Relative imports are resolved against the linted file first: `src/hooks/use-theme` matches `../../hooks/use-theme` from a feature, but not that feature's own `./hooks/use-theme`. Aliased imports are matched as written, so use `hooks/use-theme` to also match `@/hooks/use-theme`. The rule trusts allowed modules without checking their imports; prefer a `.ui` hook when you control the code.
+Each `allow` entry needs `from`, `hooks`, or both:
+
+| Option  | Type       | Behavior                                                                                              |
+| ------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| `from`  | `string`   | The module the entry applies to. When omitted, the entry applies to every otherwise forbidden module. |
+| `hooks` | `string[]` | Named imports allowed from that module. When omitted, every import from the `from` module is allowed. |
+
+An import passes when each name it takes from a forbidden module is listed by a matching entry, so `{ from: 'src/hooks/use-theme', hooks: ['useTheme'] }` allows `import { useTheme } from '../../hooks/use-theme'` but still reports `useThemeStore` from the same module. Entries combine: one entry can allow `useTheme` and another `useThemeColors` in the same import. `hooks` entries only match named imports and `export { name } from` re-exports. Default and namespace imports, side-effect imports, `export *`, `import()`, and `require()` need an entry with `from` and no `hooks`.
+
+`from` matches the end of an import path on whole segments, ignoring a source extension, so `hooks/use-theme` doesn't match `../hooks/use-theme-store`. Relative imports are resolved against the linted file first: `src/hooks/use-theme` matches `../../hooks/use-theme` from a feature, but not that feature's own `./hooks/use-theme`. Aliased imports are matched as written, so use `hooks/use-theme` to also match `@/hooks/use-theme`. The rule trusts allowed hooks without checking their imports; prefer a `.ui` hook when you control the code.
 
 ## One view and one logic file per folder
 
