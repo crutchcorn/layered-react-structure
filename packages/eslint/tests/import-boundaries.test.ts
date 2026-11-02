@@ -47,6 +47,26 @@ tester.run('presentation-imports', plugin.rules['presentation-imports'], {
       filename: 'C:\\project\\src\\views\\chat\\chat.ui.tsx',
       code: "import type { Message } from '../types/chat';",
     },
+    "import { useMediaQuery } from '../hooks/use-media-query.ui';",
+    "import { useDisclosure } from '@/hooks/use-disclosure.ui.ts';",
+    {
+      filename: 'src/hooks/use-disclosure.ui.ts',
+      code: "import { useState } from 'react'; import { useToggle } from './use-toggle.ui';",
+    },
+    {
+      filename: 'src/views/chat/chat.ui.tsx',
+      code: "import { useTheme } from '../../hooks/use-theme';",
+      options: [{ allow: ['src/hooks/use-theme'] }],
+    },
+    {
+      filename: 'src/views/chat/chat.ui.tsx',
+      code: "import { useTheme } from '@/hooks/use-theme';",
+      options: [{ allow: ['hooks/use-theme.ts'] }],
+    },
+    {
+      code: "import { useVirtualizer } from '@tanstack/react-virtual';",
+      options: [{ allow: ['@tanstack/react-virtual'] }],
+    },
   ],
   invalid: [
     invalid("import { send } from '../services/chat';", '../services/chat'),
@@ -104,6 +124,31 @@ tester.run('presentation-imports', plugin.rules['presentation-imports'], {
         `./chat.view.${extension}`,
       ),
     ),
+    invalidIn(
+      'src/hooks/use-disclosure.ui.ts',
+      "import { useSettings } from './use-settings';",
+      './use-settings',
+    ),
+    invalidIn(
+      'src/views/chat/hooks/use-collapse.ui.ts',
+      "import { useChat } from './network/use-chat';",
+      './network/use-chat',
+    ),
+    {
+      ...invalidIn(
+        'src/views/chat/chat.ui.tsx',
+        "import { useTheme } from './hooks/use-theme';",
+        './hooks/use-theme',
+      ),
+      options: [{ allow: ['src/hooks/use-theme'] }],
+    },
+    {
+      ...invalid(
+        "import { useThemeStore } from '../hooks/use-theme-store';",
+        '../hooks/use-theme-store',
+      ),
+      options: [{ allow: ['hooks/use-theme'] }],
+    },
   ],
 })
 
@@ -380,6 +425,7 @@ for (const filename of [
   'src/chat.ui.tsx',
   'src/views/chat/chat.ui.tsx',
   'src/views/chat/chat.ui.jsx',
+  'src/hooks/use-media-query.ui.ts',
 ]) {
   test(`recommended presentation rule applies to ${filename}`, () => {
     const messages = new Linter().verify(

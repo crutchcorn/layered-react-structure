@@ -107,8 +107,8 @@ function createLrsFolderStructure(root: string) {
       services: recursiveDirectory('services', [moduleFile, tests]),
       types: recursiveDirectory('types', [moduleFile, declarations, tests]),
       hooks: recursiveDirectory('hooks', [
-        { name: `use-${kebabName}.ts` },
-        { name: `use-${kebabName}.(spec|test).(ts|tsx)` },
+        { name: `use-${kebabName}(.ui)?.ts` },
+        { name: `use-${kebabName}(.ui)?.(spec|test).(ts|tsx)` },
         barrel,
       ]),
       components: recursiveDirectory('components', [

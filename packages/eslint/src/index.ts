@@ -63,7 +63,7 @@ plugin.configs.recommended = [
   },
   {
     name: 'lrs/presentation-imports',
-    files: ['src/**/*.ui.{tsx,jsx}'],
+    files: ['src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
     plugins: { lrs: plugin },
     rules: { 'lrs/presentation-imports': 'error' },
   },

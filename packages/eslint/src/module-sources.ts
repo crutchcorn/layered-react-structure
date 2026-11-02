@@ -1,6 +1,9 @@
 import type { TSESLint, TSESTree } from '@typescript-eslint/utils'
 
-type ImportRuleContext = TSESLint.RuleContext<'forbiddenImport', []>
+type ImportRuleContext = TSESLint.RuleContext<
+  'forbiddenImport',
+  readonly unknown[]
+>
 
 function staticSource(
   node: TSESTree.Node | null | undefined,
@@ -78,8 +81,71 @@ function normalizeModuleSource(source: string): string {
     : normalized
 }
 
+export function isRelative(source: string): boolean {
+  return (
+    source === '.' ||
+    source === '..' ||
+    source.startsWith('./') ||
+    source.startsWith('../')
+  )
+}
+
+function pathSegments(modulePath: string): string[] {
+  return modulePath
+    .replace(/\.[cm]?[jt]sx?$/i, '')
+    .split('/')
+    .filter((segment) => segment !== '' && segment !== '.')
+}
+
+/** Whether a module path ends with the entry's whole segments, ignoring a source extension. */
+export function endsWithSegments(modulePath: string, entry: string): boolean {
+  const target = pathSegments(modulePath)
+  const suffix = pathSegments(entry.replace(/\\/g, '/'))
+  const offset = target.length - suffix.length
+  return (
+    suffix.length > 0 &&
+    offset >= 0 &&
+    suffix.every((segment, index) => segment === target[offset + index])
+  )
+}
+
 export function isLayer(source: string, layer: string): boolean {
   return source.split('/').includes(layer)
+}
+
+const structuralFolders = new Set([
+  'src',
+  'views',
+  'assets',
+  'components',
+  'constants',
+  'hooks',
+  'services',
+  'types',
+  'utils',
+])
+
+/** Whether a relative import stays inside the importer's nearest enclosing `layer` folder. */
+export function staysInLayer(
+  directory: string,
+  source: string,
+  layer: string,
+): boolean {
+  if (!isRelative(source)) return false
+  const segments = directory.split('/')
+  let nearest = segments.length - 1
+  while (nearest >= 0 && !structuralFolders.has(segments[nearest] ?? '')) {
+    nearest--
+  }
+  if (segments[nearest] !== layer) return false
+
+  let depth = segments.length - 1 - nearest
+  for (const segment of source.split('/')) {
+    if (segment === '..') depth--
+    else if (segment !== '.' && segment !== '') depth++
+    if (depth < 0) return false
+  }
+  return true
 }
 
 export function isComponent(source: string, kind: 'view' | 'ui'): boolean {
