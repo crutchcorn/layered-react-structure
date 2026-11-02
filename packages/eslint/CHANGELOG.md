@@ -1,5 +1,33 @@
 # lrs-eslint-plugin
 
+## 0.3.0
+
+### Minor Changes
+
+- c8ee568: Apply presentation import checks to component modules and keep components out of services.
+- cca639b: Add an opt-in strict rule that keeps component folders focused on rendering.
+- 5e79038: Add a recommended rule that prevents hooks from rendering React elements.
+- 3e0351f: Skip test, spec, story, and test-support files in the recommended and strict boundary presets.
+- a22f2a8: Block presentation and service modules from importing application `.logic` modules.
+- 2bca51d: Keep network and browser-storage effects out of presentation and utility modules.
+- 6f9a5ab: Let presentational components use presentation-safe hooks. A hook named with a
+  `.ui` suffix, such as `src/hooks/use-disclosure.ui.ts`, may be imported from
+  `.ui` files. The recommended configuration now applies `lrs/presentation-imports`
+  to every `src/**/*.ui.*` source file, so these hooks are held to the same
+  boundary and can't import application hooks, services, or TanStack packages.
+  The folder structure policy accepts `use-*.ui.ts` hooks and their tests.
+
+  `lrs/presentation-imports` also accepts an `allow` option for hooks that are
+  safe for presentation. Each entry takes a `from` module, a list of `hooks`, or
+  both, such as `{ from: 'src/hooks/use-theme', hooks: ['useTheme'] }`.
+
+  Relative imports from a `.ui` file inside a `hooks/` or `services/` folder that
+  stay within that folder now count as imports of that layer.
+
+- 6cfcc4e: Add a recommended rule that keeps utilities independent of application and React runtime layers.
+- 52db48a: Add a recommended rule that keeps DOM markup and styling out of view modules.
+- 462ae3b: Allow applications to ignore framework-owned paths in the structure policy.
+
 ## 0.2.0
 
 ### Minor Changes
