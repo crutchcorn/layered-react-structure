@@ -24,6 +24,9 @@ function isTypeOnlyReference(node: TSESTree.Node): boolean {
         parent.specifiers.every((specifier) => specifier.exportKind === 'type'))
     )
   }
+  if (parent.type === 'ExportAllDeclaration') {
+    return parent.exportKind === 'type'
+  }
   if (parent.type === 'TSImportType') return true
   if (parent.type === 'TSExternalModuleReference') {
     const declaration = parent.parent
