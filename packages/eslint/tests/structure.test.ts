@@ -77,6 +77,8 @@ for (const filename of [
   'src/components/buttons/action-button.module.css',
   'src/constants/network/timeouts.ts',
   'src/hooks/use-status.ts',
+  'src/hooks/use-media-query.ui.ts',
+  'src/hooks/use-media-query.ui.test.ts',
   'src/hooks/network/use-connectivity.spec.tsx',
   'src/hooks/network/index.ts',
   'src/services/offline/outbox-storage.ts',

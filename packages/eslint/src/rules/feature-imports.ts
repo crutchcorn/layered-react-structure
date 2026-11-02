@@ -1,6 +1,6 @@
 import path from 'node:path'
 import type { TSESLint } from '@typescript-eslint/utils'
-import { visitModuleSources } from '../module-sources.js'
+import { isRelative, visitModuleSources } from '../module-sources.js'
 
 /** Feature names from each `views/<feature>` pair in a path, outermost first. */
 function featureNames(modulePath: string): string[] {
@@ -11,15 +11,6 @@ function featureNames(modulePath: string): string[] {
     if (segment === 'views' && feature !== undefined) names.push(feature)
   })
   return names
-}
-
-function isRelative(source: string): boolean {
-  return (
-    source === '.' ||
-    source === '..' ||
-    source.startsWith('./') ||
-    source.startsWith('../')
-  )
 }
 
 const featureImports: TSESLint.RuleModule<'forbiddenImport', []> = {

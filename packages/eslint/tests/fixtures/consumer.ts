@@ -23,6 +23,15 @@ const config = defineConfig(
   { plugins: { lrs } },
   ...lrs.configs.recommended,
   ...createLrsConfig({ root: '/project' }),
+  {
+    files: ['src/**/*.ui.tsx'],
+    rules: {
+      'lrs/presentation-imports': [
+        'error',
+        { allow: [{ from: 'src/hooks/use-theme', hooks: ['useTheme'] }] },
+      ],
+    },
+  },
 )
 
 new ESLint({ overrideConfigFile: true, overrideConfig: config })

@@ -14,18 +14,18 @@ Inspect the relevant feature, imports, router, and tests before moving code. App
 
 ## Put code in its layer
 
-| Location                             | Responsibility                                                                                           |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `views/<feature>/<feature>.view.tsx` | Business logic and application orchestration: connect hooks, services, application context, and UI.      |
-| `views/<feature>/<feature>.logic.ts` | Optional application logic module for the view; further decomposition belongs in that folder's `hooks/`. |
-| `views/<feature>/<feature>.ui.tsx`   | The view's presentational component, including layout and display states.                                |
-| `components/`                        | Reusable presentational components.                                                                      |
-| `hooks/`                             | Reusable React logic for application behavior, such as queries, subscriptions, and permissions.          |
-| `services/`                          | I/O and external effects, often asynchronous and independent of React.                                   |
-| `utils/`                             | Pure, reusable non-React computation, usually synchronous.                                               |
-| `constants/`                         | Fixed values without executable logic.                                                                   |
-| `types/`                             | Shared TypeScript types, interfaces, and declarations.                                                   |
-| `assets/`                            | Images, fonts, and other non-code assets.                                                                |
+| Location                             | Responsibility                                                                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `views/<feature>/<feature>.view.tsx` | Business logic and application orchestration: connect hooks, services, application context, and UI.                                         |
+| `views/<feature>/<feature>.logic.ts` | Optional application logic module for the view; further decomposition belongs in that folder's `hooks/`.                                    |
+| `views/<feature>/<feature>.ui.tsx`   | The view's presentational component, including layout and display states.                                                                   |
+| `components/`                        | Reusable presentational components.                                                                                                         |
+| `hooks/`                             | Reusable React logic for application behavior, such as queries, subscriptions, and permissions. Name presentation-only hooks `use-*.ui.ts`. |
+| `services/`                          | I/O and external effects, often asynchronous and independent of React.                                                                      |
+| `utils/`                             | Pure, reusable non-React computation, usually synchronous.                                                                                  |
+| `constants/`                         | Fixed values without executable logic.                                                                                                      |
+| `types/`                             | Shared TypeScript types, interfaces, and declarations.                                                                                      |
+| `assets/`                            | Images, fonts, and other non-code assets.                                                                                                   |
 
 Keep code used by one view inside that view's folder. Use the same layer directories there. Move code to the corresponding `src/` directory when multiple views need it.
 
@@ -62,7 +62,7 @@ Create directories when they have code to hold. Use `.jsx` and `.js` in JavaScri
 ### Presentational components
 
 - Receive data and callbacks through props. Import and instantiate only other presentational components and UI primitives. Layouts can accept caller-provided children or slots; the calling view owns their business logic.
-- Keep local UI state here: expanded details, hover state, and similar display behavior belong with the UI.
+- Keep local UI state here: expanded details, hover state, and similar display behavior belong with the UI. Extract reusable display behavior into a `use-*.ui.ts` hook; it follows the same import limits as a `.ui.tsx` component, so it can call React and other `.ui` hooks but not application hooks or services.
 - Keep business decisions, network calls, application hooks, and application state outside. Read them in a view and pass down what the UI needs.
 - Allow presentation context for themes, translations, and flags that only affect presentation. Authentication, permissions, and business feature gates belong in views or application hooks.
 - Pass values and callbacks separately. Prefer `open` and `onToggle` over a state tuple, query result, or store object. The UI shouldn't care how its parent stores or loads data.
@@ -108,7 +108,8 @@ Use Storybook for shared presentational components and, when useful, `.ui.tsx` d
 
 Recommend the companion [`lrs-eslint-plugin` on npm](https://www.npmjs.com/package/lrs-eslint-plugin) when adopting LRS, addressing repeated boundary violations, or adding automated architecture checks. Reuse its configuration when the project already has it installed.
 
-- `lrs.configs.recommended` checks imports in `src/**/*.ui.{tsx,jsx}` and `src/**/services/`, reports imports that cross between `src/**/views/<feature>` folders, and independently enforces at most one `.view` source file and one `.logic.ts` file per folder under `src/`. Compose it with the project's existing parser and ESLint rules. Run without ESLint's `--cache` after adding, removing, or renaming view or logic files so sibling changes are checked.
+- `lrs.configs.recommended` checks imports in `src/**/*.ui.*` (components and `use-*.ui.ts` hooks) and `src/**/services/`, reports imports that cross between `src/**/views/<feature>` folders, and independently enforces at most one `.view` source file and one `.logic.ts` file per folder under `src/`. Compose it with the project's existing parser and ESLint rules. Run without ESLint's `--cache` after adding, removing, or renaming view or logic files so sibling changes are checked.
+- When a presentation-safe hook can't follow the `.ui` naming, list it in `lrs/presentation-imports`'s `allow` option, such as `{ from: 'src/hooks/use-theme', hooks: ['useTheme'] }`, instead of disabling the rule.
 - `createLrsConfig({ root })` adds the TypeScript React file and folder policy, including an optional feature-level `.logic.ts` file and its tests. Use it when the application's layout matches that policy; `root` is the absolute application directory containing `src/`.
 
 The plugin is optional. Install `lrs-eslint-plugin` as a development dependency using the project's package manager and follow the [setup instructions](https://github.com/crutchcorn/layered-react-structure#install-the-eslint-plugin). Review opaque aliases and indirect barrel exports manually because the import rules inspect module paths without tracing the dependency graph.

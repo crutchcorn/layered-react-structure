@@ -22,15 +22,15 @@ export default tseslint.config(
 
 The consumer supplies its JavaScript/TypeScript parser and JSX configuration. Paths are relative to the consuming ESLint configuration, so a frontend config in `apps/frontend` applies the rules to that application's `src` directory. The plugin does not configure or replace `no-restricted-imports`; application-specific restrictions can run alongside these rules.
 
-| Rule                       | Recommended files                                      | Disallowed behavior                                                                           |
-| -------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `lrs/presentation-imports` | `src/**/*.ui.{tsx,jsx}`                                | `services` and `hooks` path segments, `.view` components, all `@tanstack/*` packages          |
-| `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` path segments, `.view` and `.ui` components |
-| `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | Imports that resolve into a different `views/<feature>` folder                                |
-| `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                          |
-| `lrs/one-logic-per-folder` | `src/**/*.logic.ts`                                    | More than one `.logic.ts` file in the same folder                                             |
+| Rule                       | Recommended files                                      | Disallowed behavior                                                                                                    |
+| -------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `lrs/presentation-imports` | `src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`          | `services` path segments, `hooks` path segments other than `.ui` hooks, `.view` components, all `@tanstack/*` packages |
+| `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` path segments, `.view` and `.ui` components                          |
+| `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | Imports that resolve into a different `views/<feature>` folder                                                         |
+| `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                                                   |
+| `lrs/one-logic-per-folder` | `src/**/*.logic.ts`                                    | More than one `.logic.ts` file in the same folder                                                                      |
 
-Presentational components may import React, plain types, utilities, constants, and other presentation components. Services may import framework-independent tools such as `@tanstack/query-core`, other services, and plain types. Type-only imports are subject to the same boundaries: move shared types into a `types` module instead of importing them through a service or component.
+Presentational components may import React, plain types, utilities, constants, other presentation components, and [presentation-safe hooks](#presentation-safe-hooks). Services may import framework-independent tools such as `@tanstack/query-core`, other services, and plain types. Type-only imports are subject to the same boundaries: move shared types into a `types` module instead of importing them through a service or component.
 
 The import rules inspect static imports, re-exports, `import()` expressions, unshadowed `require()` calls, TypeScript import types, and TypeScript import-equals declarations. String literals and template literals without expressions are checked. Component imports are recognized with or without source/output extensions, including `.view.tsx` and `.ui.js`. Directory imports such as `../services`, Windows separators, and bundler query/fragment suffixes are also recognized.
 
@@ -59,6 +59,46 @@ The declarations cover the default plugin, `configs.recommended`, all five rules
 When two features need the same hook, component, utility, service, or type, move it to the matching `src/`-level layer and make it generic enough for both consumers instead of importing across features. For example, a `usePeople` hook that `chat` and `people` both call belongs in `src/hooks/use-people.ts`, not in `src/views/people/hooks/`.
 
 The rule resolves relative specifiers against the linted file's path and, like the other import rules, otherwise reads the `views/<feature>` segments from the specifier itself. It does not check shared layers that import a feature; `src/components/person-card.tsx` importing `../views/people/people.ui` is a separate review item. Nested `views/` folders inside a feature are treated as sub-features: they may import from their ancestors and descendants, but not from a sibling sub-feature.
+
+## Presentation-safe hooks
+
+Presentational components can't import from `hooks/` because application hooks usually read queries, services, or business state. Some hooks only manage display behavior, such as a disclosure toggle or a media query. There are two ways to let `.ui` files use them.
+
+Name a presentation-only hook with a `.ui` suffix, such as `src/hooks/use-disclosure.ui.ts`. `lrs/presentation-imports` allows `.ui` modules from `hooks/`, and the recommended configuration applies the same rule to the hook itself. A `.ui` hook can use React, utilities, constants, types, and other `.ui` hooks; importing an application hook, a service, or a TanStack package reports an error. Relative imports that stay inside a `hooks/` folder, such as `./use-settings`, count as hook imports.
+
+For a hook you can't rename, or one from a package such as `@tanstack/react-virtual`, list it in the rule's `allow` option:
+
+```js
+export default [
+  ...lrs.configs.recommended,
+  {
+    files: ['src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
+    rules: {
+      'lrs/presentation-imports': [
+        'error',
+        {
+          allow: [
+            { from: 'src/hooks/use-theme', hooks: ['useTheme'] },
+            { hooks: ['useVirtualizer'] },
+            { from: 'src/hooks/use-breakpoints' },
+          ],
+        },
+      ],
+    },
+  },
+]
+```
+
+Each `allow` entry needs `from`, `hooks`, or both:
+
+| Option  | Type       | Behavior                                                                                              |
+| ------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| `from`  | `string`   | The module the entry applies to. When omitted, the entry applies to every otherwise forbidden module. |
+| `hooks` | `string[]` | Named imports allowed from that module. When omitted, every import from the `from` module is allowed. |
+
+An import passes when each name it takes from a forbidden module is listed by a matching entry, so `{ from: 'src/hooks/use-theme', hooks: ['useTheme'] }` allows `import { useTheme } from '../../hooks/use-theme'` but still reports `useThemeStore` from the same module. Entries combine: one entry can allow `useTheme` and another `useThemeColors` in the same import. `hooks` entries only match named imports and `export { name } from` re-exports. Default and namespace imports, side-effect imports, `export *`, `import()`, and `require()` need an entry with `from` and no `hooks`.
+
+`from` matches the end of an import path on whole segments, ignoring a source extension, so `hooks/use-theme` doesn't match `../hooks/use-theme-store`. Relative imports are resolved against the linted file first: `src/hooks/use-theme` matches `../../hooks/use-theme` from a feature, but not that feature's own `./hooks/use-theme`. Aliased imports are matched as written, so use `hooks/use-theme` to also match `@/hooks/use-theme`. The rule trusts allowed hooks without checking their imports; prefer a `.ui` hook when you control the code.
 
 ## One view and one logic file per folder
 
@@ -93,7 +133,7 @@ export default tseslint.config(
 | `src`                            | Shared layers, `views`, `app.tsx`, `main.tsx`, their tests, `vite-env.d.ts`, and styles                           |
 | `src/views/<feature>`            | At most one `*.view.tsx` and one `*.logic.ts`; `*.ui.tsx`, tests, stories, styles, `index.ts`, and feature layers |
 | `components`                     | Components (`*.tsx`, optionally `*.ui.tsx`), tests, stories, styles, and barrels                                  |
-| `hooks`                          | `use-*.ts`, hook tests, and barrels                                                                               |
+| `hooks`                          | `use-*.ts`, presentation-only `use-*.ui.ts`, hook tests, and barrels                                              |
 | `services`, `constants`, `utils` | TypeScript modules, tests, and barrels                                                                            |
 | `types`                          | TypeScript modules and declarations such as `svg.d.ts`                                                            |
 | `services/schemas`               | Generated `*.d.ts` schemas and an optional barrel                                                                 |
