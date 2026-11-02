@@ -56,16 +56,27 @@ tester.run('presentation-imports', plugin.rules['presentation-imports'], {
     {
       filename: 'src/views/chat/chat.ui.tsx',
       code: "import { useTheme } from '../../hooks/use-theme';",
-      options: [{ allow: ['src/hooks/use-theme'] }],
+      options: [{ allow: [{ from: 'src/hooks/use-theme' }] }],
     },
     {
       filename: 'src/views/chat/chat.ui.tsx',
       code: "import { useTheme } from '@/hooks/use-theme';",
-      options: [{ allow: ['hooks/use-theme.ts'] }],
+      options: [{ allow: [{ from: 'hooks/use-theme.ts' }] }],
     },
     {
       code: "import { useVirtualizer } from '@tanstack/react-virtual';",
-      options: [{ allow: ['@tanstack/react-virtual'] }],
+      options: [{ allow: [{ hooks: ['useVirtualizer'] }] }],
+    },
+    {
+      code: "import { useTheme, useThemeColors } from '../hooks/use-theme'; export { useTheme } from '../hooks/use-theme';",
+      options: [
+        {
+          allow: [
+            { from: 'hooks/use-theme', hooks: ['useTheme'] },
+            { hooks: ['useThemeColors'] },
+          ],
+        },
+      ],
     },
   ],
   invalid: [
@@ -140,16 +151,54 @@ tester.run('presentation-imports', plugin.rules['presentation-imports'], {
         "import { useTheme } from './hooks/use-theme';",
         './hooks/use-theme',
       ),
-      options: [{ allow: ['src/hooks/use-theme'] }],
+      options: [{ allow: [{ from: 'src/hooks/use-theme' }] }],
     },
     {
       ...invalid(
         "import { useThemeStore } from '../hooks/use-theme-store';",
         '../hooks/use-theme-store',
       ),
-      options: [{ allow: ['hooks/use-theme'] }],
+      options: [{ allow: [{ from: 'hooks/use-theme' }] }],
+    },
+    {
+      ...invalid(
+        "import { useTheme, useThemeStore } from '../hooks/use-theme';",
+        '../hooks/use-theme',
+      ),
+      options: [{ allow: [{ from: 'hooks/use-theme', hooks: ['useTheme'] }] }],
+    },
+    {
+      ...invalid(
+        "import { useTheme } from '../hooks/use-settings';",
+        '../hooks/use-settings',
+      ),
+      options: [{ allow: [{ from: 'hooks/use-theme', hooks: ['useTheme'] }] }],
+    },
+    {
+      ...invalid(
+        "import useTheme from '../hooks/use-theme';",
+        '../hooks/use-theme',
+      ),
+      options: [{ allow: [{ hooks: ['useTheme'] }] }],
+    },
+    {
+      ...invalid("export * from '../hooks/use-theme';", '../hooks/use-theme'),
+      options: [{ allow: [{ hooks: ['useTheme'] }] }],
     },
   ],
+})
+
+test('presentation-imports allow entries need a module or hooks', () => {
+  expect(() =>
+    new Linter().verify(
+      '',
+      {
+        plugins: { lrs: plugin },
+        rules: { 'lrs/presentation-imports': ['error', { allow: [{}] }] },
+      },
+      'src/chat.ui.js',
+    ),
+  ).toThrow(/anyOf/)
 })
 
 tester.run('service-imports', plugin.rules['service-imports'], {

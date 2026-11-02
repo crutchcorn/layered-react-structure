@@ -26,7 +26,10 @@ const config = defineConfig(
   {
     files: ['src/**/*.ui.tsx'],
     rules: {
-      'lrs/presentation-imports': ['error', { allow: ['hooks/use-theme'] }],
+      'lrs/presentation-imports': [
+        'error',
+        { allow: [{ from: 'src/hooks/use-theme', hooks: ['useTheme'] }] },
+      ],
     },
   },
 )

@@ -33,15 +33,43 @@ function isUnshadowedRequire(
   return true
 }
 
-/** Visit statically known module references without resolving application aliases. */
+function exportName(
+  node: TSESTree.Identifier | TSESTree.StringLiteral,
+): string {
+  return node.type === 'Identifier' ? node.name : node.value
+}
+
+function importedNames(
+  node: TSESTree.ImportDeclaration | TSESTree.ExportNamedDeclaration,
+): string[] | undefined {
+  const names = node.specifiers.map((specifier) => {
+    if (specifier.type === 'ImportSpecifier') {
+      return exportName(specifier.imported)
+    }
+    if (specifier.type === 'ExportSpecifier') return exportName(specifier.local)
+    return specifier.type === 'ImportDefaultSpecifier' ? 'default' : '*'
+  })
+  return names.length > 0 ? names : undefined
+}
+
+/**
+ * Visit statically known module references without resolving application aliases.
+ * `names` lists the bindings taken from the module, or is undefined when the whole module is used.
+ */
 export function visitModuleSources(
   context: ImportRuleContext,
-  isForbidden: (source: string) => boolean,
+  isForbidden: (source: string, names: string[] | undefined) => boolean,
 ): TSESLint.RuleListener {
-  function check(node: TSESTree.Node | null | undefined): void {
+  function check(
+    node: TSESTree.Node | null | undefined,
+    names?: string[],
+  ): void {
     if (!node) return
     const source = staticSource(node)
-    if (source !== undefined && isForbidden(normalizeModuleSource(source))) {
+    if (
+      source !== undefined &&
+      isForbidden(normalizeModuleSource(source), names)
+    ) {
       context.report({
         node,
         messageId: 'forbiddenImport',
@@ -51,8 +79,8 @@ export function visitModuleSources(
   }
 
   return {
-    ImportDeclaration: (node) => check(node.source),
-    ExportNamedDeclaration: (node) => check(node.source),
+    ImportDeclaration: (node) => check(node.source, importedNames(node)),
+    ExportNamedDeclaration: (node) => check(node.source, importedNames(node)),
     ExportAllDeclaration: (node) => check(node.source),
     ImportExpression: (node) => check(node.source),
     TSImportType: (node) => check(node.source ?? node.argument),
