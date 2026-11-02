@@ -557,3 +557,38 @@ for (const filename of [
     expect(messages).toEqual([])
   })
 }
+
+const ignoredBoundaryFiles = [
+  ['src/utils/normalize.test.ts', "import { useState } from 'react';"],
+  [
+    'src/components/button.stories.tsx',
+    "import { request } from '../services/request'; export const Button = () => null;",
+  ],
+  [
+    'src/hooks/use-state-test-support.ts',
+    "import React from 'react'; export const render = () => React.createElement('div');",
+  ],
+  [
+    'src/views/chat/chat.view.spec.tsx',
+    "import { PeopleView } from '../../people/people.view';",
+  ],
+  [
+    'src/services/request.test.ts',
+    "import React from 'react'; fetch('/test');",
+  ],
+  [
+    'src/views/chat/chat.ui.test.tsx',
+    "import { request } from '../../services/request'; fetch('/test');",
+  ],
+] as const
+
+for (const [filename, code] of ignoredBoundaryFiles) {
+  test(`recommended and strict presets ignore ${filename}`, () => {
+    const messages = new Linter().verify(
+      code,
+      [baseConfig, ...plugin.configs.recommended, ...plugin.configs.strict],
+      { filename },
+    )
+    expect(messages).toEqual([])
+  })
+}

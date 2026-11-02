@@ -15,6 +15,8 @@ import type { StructureConfigOptions } from './structure.js'
 
 export type LrsConfigOptions = StructureConfigOptions
 
+const testFileIgnores = ['**/*.{test,spec,stories}.*', '**/*-test-support.*']
+
 export interface LrsPlugin extends ESLint.Plugin {
   rules: {
     'feature-imports': Rule.RuleModule
@@ -63,12 +65,14 @@ plugin.configs.recommended = [
   {
     name: 'lrs/feature-imports',
     files: ['src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
+    ignores: testFileIgnores,
     plugins: { lrs: plugin },
     rules: { 'lrs/feature-imports': 'error' },
   },
   {
     name: 'lrs/hook-rendering',
     files: ['src/**/hooks/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
+    ignores: testFileIgnores,
     plugins: { lrs: plugin },
     rules: { 'lrs/hook-rendering': 'error' },
   },
@@ -91,6 +95,7 @@ plugin.configs.recommended = [
       'src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
       'src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
     ],
+    ignores: testFileIgnores,
     plugins: { lrs: plugin },
     rules: { 'lrs/no-application-io': 'error' },
   },
@@ -100,24 +105,28 @@ plugin.configs.recommended = [
       'src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
       'src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
     ],
+    ignores: testFileIgnores,
     plugins: { lrs: plugin },
     rules: { 'lrs/presentation-imports': 'error' },
   },
   {
     name: 'lrs/view-composition',
     files: ['src/**/*.view.tsx'],
+    ignores: testFileIgnores,
     plugins: { lrs: plugin },
     rules: { 'lrs/view-composition': 'error' },
   },
   {
     name: 'lrs/service-imports',
     files: ['src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
+    ignores: testFileIgnores,
     plugins: { lrs: plugin },
     rules: { 'lrs/service-imports': 'error' },
   },
   {
     name: 'lrs/utility-imports',
     files: ['src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
+    ignores: testFileIgnores,
     plugins: { lrs: plugin },
     rules: { 'lrs/utility-imports': 'error' },
   },
@@ -127,6 +136,7 @@ plugin.configs.strict = [
   {
     name: 'lrs/component-placement',
     files: ['src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
+    ignores: testFileIgnores,
     plugins: { lrs: plugin },
     rules: { 'lrs/component-placement': 'error' },
   },

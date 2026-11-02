@@ -38,6 +38,8 @@ Presentational components may import React, plain types, utilities, constants, o
 
 `lrs.configs.strict` is an opt-in addition to `lrs.configs.recommended`. Spread it after the recommended preset to enable `lrs/component-placement`; it does not change the recommended preset.
 
+Both presets ignore `*.test.*`, `*.spec.*`, `*.stories.*`, and `*-test-support.*` files by default, keeping application-layer boundaries focused on production modules.
+
 The import rules inspect static imports, re-exports, `import()` expressions, unshadowed `require()` calls, TypeScript import types, and TypeScript import-equals declarations. String literals and template literals without expressions are checked. Component imports are recognized with or without source/output extensions, including `.view.tsx` and `.ui.js`. Directory imports such as `../services`, Windows separators, and bundler query/fragment suffixes are also recognized.
 
 This is a static specifier check, not an import-graph resolver. Computed module names and indirect exports from otherwise permitted barrels are not traced. Aliases must expose their layer in the module path (for example `@/services/chat`); an opaque alias such as `@chat-client` needs an application-specific restriction. Locally declared or parameter-bound functions named `require` are left alone.
