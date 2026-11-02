@@ -22,6 +22,10 @@ const _noApplicationIoRule: Rule.RuleModule = lrs.rules['no-application-io']
 const _recommended: Linter.Config[] = lrs.configs.recommended
 const _strict: Linter.Config[] = lrs.configs.strict
 const _application: Linter.Config[] = createLrsConfig(options)
+const _applicationWithIgnoredPaths: Linter.Config[] = createLrsConfig({
+  root: '/project',
+  ignorePatterns: ['routes/**', 'routeTree.gen.ts'],
+})
 
 const config = defineConfig(
   { plugins: { lrs } },

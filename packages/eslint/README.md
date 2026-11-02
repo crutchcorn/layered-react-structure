@@ -134,6 +134,8 @@ export default tseslint.config(
 
 `root` must be the absolute application directory containing `src`; `import.meta.dirname` supplies it from the consuming ESLint config. The upstream plugin otherwise derives its root from its installation path, which resolves to the workspace root under pnpm and can silently skip an application's files. The factory scopes all recommended rules and the folder checker to the explicit root, independently of the command's working directory. Configuration files, public assets, end-to-end tests outside `src`, and sibling applications are outside this policy.
 
+Pass `ignorePatterns` to exempt framework-owned paths from the folder-structure check without disabling the import rules. Patterns are relative to `src`, for example `createLrsConfig({ root: import.meta.dirname, ignorePatterns: ['routes/**', 'routeTree.gen.ts'] })`.
+
 | Location                         | Accepted contents                                                                                                 |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `src`                            | Shared layers, `views`, `app.tsx`, `main.tsx`, their tests, `vite-env.d.ts`, and styles                           |

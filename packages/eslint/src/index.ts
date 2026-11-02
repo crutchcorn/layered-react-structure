@@ -135,12 +135,15 @@ plugin.configs.strict = [
 export default plugin
 
 /** Apply layer boundaries and the file layout to one React application. */
-export function createLrsConfig({ root }: LrsConfigOptions): Linter.Config[] {
+export function createLrsConfig({
+  root,
+  ignorePatterns,
+}: LrsConfigOptions): Linter.Config[] {
   return [
     ...plugin.configs.recommended.map((config) => ({
       ...config,
       basePath: root,
     })),
-    ...createStructureConfig({ root }),
+    ...createStructureConfig({ root, ignorePatterns }),
   ]
 }
