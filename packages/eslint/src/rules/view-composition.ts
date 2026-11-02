@@ -1,6 +1,6 @@
-import type { Rule } from 'eslint'
+import type { TSESLint } from '@typescript-eslint/utils'
 
-const viewComposition: Rule.RuleModule = {
+const viewComposition: TSESLint.RuleModule<'styling' | 'element', []> = {
   meta: {
     type: 'problem',
     schema: [],

@@ -5,6 +5,7 @@ import oneLogicPerFolder from './rules/one-logic-per-folder.js'
 import oneViewPerFolder from './rules/one-view-per-folder.js'
 import presentationImports from './rules/presentation-imports.js'
 import serviceImports from './rules/service-imports.js'
+import utilityImports from './rules/utility-imports.js'
 import viewComposition from './rules/view-composition.js'
 import { createStructureConfig } from './structure.js'
 import type { StructureConfigOptions } from './structure.js'
@@ -18,6 +19,7 @@ export interface LrsPlugin extends ESLint.Plugin {
     'one-view-per-folder': Rule.RuleModule
     'presentation-imports': Rule.RuleModule
     'service-imports': Rule.RuleModule
+    'utility-imports': Rule.RuleModule
     'view-composition': Rule.RuleModule
   }
   configs: {
@@ -38,7 +40,8 @@ const plugin: LrsPlugin = {
     'feature-imports': featureImports as unknown as Rule.RuleModule,
     'presentation-imports': presentationImports as unknown as Rule.RuleModule,
     'service-imports': serviceImports as unknown as Rule.RuleModule,
-    'view-composition': viewComposition,
+    'utility-imports': utilityImports as unknown as Rule.RuleModule,
+    'view-composition': viewComposition as unknown as Rule.RuleModule,
   },
   configs: {
     recommended: [],
@@ -81,6 +84,12 @@ plugin.configs.recommended = [
     files: ['src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
     plugins: { lrs: plugin },
     rules: { 'lrs/service-imports': 'error' },
+  },
+  {
+    name: 'lrs/utility-imports',
+    files: ['src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
+    plugins: { lrs: plugin },
+    rules: { 'lrs/utility-imports': 'error' },
   },
 ]
 

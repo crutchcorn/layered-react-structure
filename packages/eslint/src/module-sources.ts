@@ -58,7 +58,11 @@ function importedNames(
  */
 export function visitModuleSources(
   context: ImportRuleContext,
-  isForbidden: (source: string, names: string[] | undefined) => boolean,
+  isForbidden: (
+    source: string,
+    names: string[] | undefined,
+    node: TSESTree.Node,
+  ) => boolean,
 ): TSESLint.RuleListener {
   function check(
     node: TSESTree.Node | null | undefined,
@@ -68,7 +72,7 @@ export function visitModuleSources(
     const source = staticSource(node)
     if (
       source !== undefined &&
-      isForbidden(normalizeModuleSource(source), names)
+      isForbidden(normalizeModuleSource(source), names, node)
     ) {
       context.report({
         node,
