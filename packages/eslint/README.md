@@ -24,8 +24,8 @@ The consumer supplies its JavaScript/TypeScript parser and JSX configuration. Pa
 
 | Rule                       | Recommended files                                      | Disallowed behavior                                                                                                              |
 | -------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `lrs/presentation-imports` | `src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`          | `services` path segments, `hooks` path segments other than `.ui` hooks, `.view` and `.logic` modules, all `@tanstack/*` packages |
-| `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` path segments, `.view`, `.ui`, and `.logic` modules                            |
+| `lrs/presentation-imports` | `.ui` modules and `components/` modules under `src/`   | `services` path segments, `hooks` path segments other than `.ui` hooks, `.view` and `.logic` modules, all `@tanstack/*` packages |
+| `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` and `components` path segments, `.view`, `.ui`, and `.logic` modules           |
 | `lrs/utility-imports`      | `src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | `components`, `hooks`, `services`, and `views` path segments, `.view`, `.ui`, and `.logic` modules, runtime React imports        |
 | `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | Imports that resolve into a different `views/<feature>` folder                                                                   |
 | `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                                                             |

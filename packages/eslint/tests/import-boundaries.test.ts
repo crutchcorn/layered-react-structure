@@ -244,6 +244,10 @@ tester.run('service-imports', plugin.rules['service-imports'], {
       "import type { Chat } from '../hooks/use-chat';",
       '../hooks/use-chat',
     ),
+    invalid(
+      "import { Button } from '../components/button';",
+      '../components/button',
+    ),
     invalid("import { Chat } from '../chat.view';", '../chat.view'),
     invalid("import { Chat } from '../chat.ui';", '../chat.ui'),
     invalid("import { logic } from '../chat.logic';", '../chat.logic'),
@@ -476,6 +480,8 @@ for (const filename of [
   'src/chat.ui.tsx',
   'src/views/chat/chat.ui.tsx',
   'src/views/chat/chat.ui.jsx',
+  'src/components/button.tsx',
+  'src/views/chat/components/message.tsx',
   'src/hooks/use-media-query.ui.ts',
 ]) {
   test(`recommended presentation rule applies to ${filename}`, () => {
