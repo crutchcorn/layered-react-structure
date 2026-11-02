@@ -3,6 +3,7 @@ import packageJson from '../package.json' with { type: 'json' }
 import featureImports from './rules/feature-imports.js'
 import componentPlacement from './rules/component-placement.js'
 import hookRendering from './rules/hook-rendering.js'
+import noApplicationIo from './rules/no-application-io.js'
 import oneLogicPerFolder from './rules/one-logic-per-folder.js'
 import oneViewPerFolder from './rules/one-view-per-folder.js'
 import presentationImports from './rules/presentation-imports.js'
@@ -18,6 +19,7 @@ export interface LrsPlugin extends ESLint.Plugin {
   rules: {
     'feature-imports': Rule.RuleModule
     'hook-rendering': Rule.RuleModule
+    'no-application-io': Rule.RuleModule
     'component-placement': Rule.RuleModule
     'one-logic-per-folder': Rule.RuleModule
     'one-view-per-folder': Rule.RuleModule
@@ -43,6 +45,7 @@ const plugin: LrsPlugin = {
     'one-view-per-folder': oneViewPerFolder,
     'component-placement': componentPlacement as unknown as Rule.RuleModule,
     'hook-rendering': hookRendering as unknown as Rule.RuleModule,
+    'no-application-io': noApplicationIo as unknown as Rule.RuleModule,
     // TypeScript visitors extend ESTree; ESLint's runtime accepts these rules.
     'feature-imports': featureImports as unknown as Rule.RuleModule,
     'presentation-imports': presentationImports as unknown as Rule.RuleModule,
@@ -80,6 +83,16 @@ plugin.configs.recommended = [
     files: ['src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
     plugins: { lrs: plugin },
     rules: { 'lrs/one-view-per-folder': 'error' },
+  },
+  {
+    name: 'lrs/no-application-io',
+    files: [
+      'src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
+      'src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
+      'src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
+    ],
+    plugins: { lrs: plugin },
+    rules: { 'lrs/no-application-io': 'error' },
   },
   {
     name: 'lrs/presentation-imports',

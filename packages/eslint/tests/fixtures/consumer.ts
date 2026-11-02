@@ -18,6 +18,7 @@ const _serviceRule: Rule.RuleModule = lrs.rules['service-imports']
 const _viewRule: Rule.RuleModule = lrs.rules['one-view-per-folder']
 const _logicRule: Rule.RuleModule = lrs.rules['one-logic-per-folder']
 const _componentRule: Rule.RuleModule = lrs.rules['component-placement']
+const _noApplicationIoRule: Rule.RuleModule = lrs.rules['no-application-io']
 const _recommended: Linter.Config[] = lrs.configs.recommended
 const _strict: Linter.Config[] = lrs.configs.strict
 const _application: Linter.Config[] = createLrsConfig(options)
