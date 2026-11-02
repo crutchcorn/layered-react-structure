@@ -23,6 +23,8 @@ tester.run('utility-imports', plugin.rules['utility-imports'], {
     "import { type ReactNode } from 'react';",
     "import type { QueryClient } from '@tanstack/react-query';",
     "export type { ReactNode } from 'react';",
+    "export type * from 'react';",
+    "export type * as React from 'react';",
     "type ReactNode = import('react').ReactNode;",
     'const dependency = import(packageName);',
     'function inspect(require) { return require("react"); }',
@@ -70,6 +72,18 @@ tester.run('utility-imports', plugin.rules['utility-imports'], {
     },
     {
       code: "import { type ReactNode, useState } from 'react';",
+      errors: [{ messageId: 'forbiddenImport' }],
+    },
+    {
+      code: "export * from 'react';",
+      errors: [{ messageId: 'forbiddenImport' }],
+    },
+    {
+      code: "export * as React from 'react';",
+      errors: [{ messageId: 'forbiddenImport' }],
+    },
+    {
+      code: "export type * from '../services/data';",
       errors: [{ messageId: 'forbiddenImport' }],
     },
   ],
