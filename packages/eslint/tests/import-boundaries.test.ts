@@ -90,6 +90,7 @@ tester.run('presentation-imports', plugin.rules['presentation-imports'], {
     ),
     invalid("import { useChat } from '../hooks';", '../hooks'),
     invalid("import { ChatView } from './chat.view';", './chat.view'),
+    invalid("import { logic } from './chat.logic';", './chat.logic'),
     invalid(
       "import { QueryClient } from '@tanstack/query-core';",
       '@tanstack/query-core',
@@ -245,6 +246,7 @@ tester.run('service-imports', plugin.rules['service-imports'], {
     ),
     invalid("import { Chat } from '../chat.view';", '../chat.view'),
     invalid("import { Chat } from '../chat.ui';", '../chat.ui'),
+    invalid("import { logic } from '../chat.logic';", '../chat.logic'),
     invalid("export * from 'react';", 'react'),
     invalid("export type { ReactNode } from 'react';", 'react'),
     invalid("export * as ui from '../chat.ui.tsx';", '../chat.ui.tsx'),

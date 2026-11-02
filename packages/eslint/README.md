@@ -22,14 +22,14 @@ export default tseslint.config(
 
 The consumer supplies its JavaScript/TypeScript parser and JSX configuration. Paths are relative to the consuming ESLint configuration, so a frontend config in `apps/frontend` applies the rules to that application's `src` directory. The plugin does not configure or replace `no-restricted-imports`; application-specific restrictions can run alongside these rules.
 
-| Rule                       | Recommended files                                      | Disallowed behavior                                                                                                    |
-| -------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `lrs/presentation-imports` | `src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`          | `services` path segments, `hooks` path segments other than `.ui` hooks, `.view` components, all `@tanstack/*` packages |
-| `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` path segments, `.view` and `.ui` components                          |
-| `lrs/utility-imports`      | `src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | `components`, `hooks`, `services`, and `views` path segments, `.view`, `.ui`, and `.logic` modules, runtime React imports |
-| `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | Imports that resolve into a different `views/<feature>` folder                                                         |
-| `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                                                   |
-| `lrs/one-logic-per-folder` | `src/**/*.logic.ts`                                    | More than one `.logic.ts` file in the same folder                                                                      |
+| Rule                       | Recommended files                                      | Disallowed behavior                                                                                                              |
+| -------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `lrs/presentation-imports` | `src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`          | `services` path segments, `hooks` path segments other than `.ui` hooks, `.view` and `.logic` modules, all `@tanstack/*` packages |
+| `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` path segments, `.view`, `.ui`, and `.logic` modules                            |
+| `lrs/utility-imports`      | `src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | `components`, `hooks`, `services`, and `views` path segments, `.view`, `.ui`, and `.logic` modules, runtime React imports        |
+| `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | Imports that resolve into a different `views/<feature>` folder                                                                   |
+| `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                                                             |
+| `lrs/one-logic-per-folder` | `src/**/*.logic.ts`                                    | More than one `.logic.ts` file in the same folder                                                                                |
 
 Presentational components may import React, plain types, utilities, constants, other presentation components, and [presentation-safe hooks](#presentation-safe-hooks). Services may import framework-independent tools such as `@tanstack/query-core`, other services, and plain types. Utilities may use type-only React contracts, but not React at runtime or application and presentation layers. Type-only imports are subject to the same layer boundaries: move shared types into a `types` module instead of importing them through a service or component.
 

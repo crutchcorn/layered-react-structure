@@ -64,6 +64,7 @@ Create directories when they have code to hold. Use `.jsx` and `.js` in JavaScri
 - Receive data and callbacks through props. Import and instantiate only other presentational components and UI primitives. Layouts can accept caller-provided children or slots; the calling view owns their business logic.
 - Keep local UI state here: expanded details, hover state, and similar display behavior belong with the UI. Extract reusable display behavior into a `use-*.ui.ts` hook; it follows the same import limits as a `.ui.tsx` component, so it can call React and other `.ui` hooks but not application hooks or services.
 - Keep business decisions, network calls, application hooks, and application state outside. Read them in a view and pass down what the UI needs.
+- Do not import `.view` or `.logic` modules into presentation; the view owns application orchestration and composes the UI.
 - Allow presentation context for themes, translations, and flags that only affect presentation. Authentication, permissions, and business feature gates belong in views or application hooks.
 - Pass values and callbacks separately. Prefer `open` and `onToggle` over a state tuple, query result, or store object. The UI shouldn't care how its parent stores or loads data.
 - Lift coordination into a view when an interaction opens a component with business logic. For example, a person card calls `onEdit`; the view owns the edit workflow and composes the dialog.

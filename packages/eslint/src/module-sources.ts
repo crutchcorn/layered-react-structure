@@ -180,7 +180,10 @@ export function staysInLayer(
   return true
 }
 
-export function isComponent(source: string, kind: 'view' | 'ui'): boolean {
+export function isComponent(
+  source: string,
+  kind: 'logic' | 'view' | 'ui',
+): boolean {
   // Extensionless imports and both source/output JavaScript extensions count.
   return new RegExp(`\\.${kind}(?:\\.[cm]?[jt]sx?)?$`, 'i').test(source)
 }
