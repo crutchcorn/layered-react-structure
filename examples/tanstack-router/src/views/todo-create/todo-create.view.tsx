@@ -3,7 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useTodoActions } from '../../hooks/use-todos'
 import { usePageTitle } from '../../hooks/use-page-title'
 import { TodoCreateUI } from './todo-create.ui'
-import { todoFormOptions } from './utils/todo-form-options'
+import { todoFormOptions } from './todo-create.logic'
 
 export function TodoCreateView() {
   usePageTitle('New task')
