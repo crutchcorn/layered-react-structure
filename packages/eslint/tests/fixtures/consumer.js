@@ -12,6 +12,14 @@ const [result] = await eslint.lintText("import React from 'react'", {
   filePath: 'src/services/request.js',
 })
 
+const strict = new ESLint({
+  overrideConfigFile: true,
+  overrideConfig: defineConfig(...lrs.configs.strict),
+})
+const [componentResult] = await strict.lintText('export const helper = 1', {
+  filePath: 'src/components/helper.ts',
+})
+
 mkdirSync('src/views/people', { recursive: true })
 writeFileSync('src/views/people/edit-person.view.js', '')
 const [viewResult] = await eslint.lintText('export const people = []', {
@@ -41,6 +49,9 @@ const [structureResult] = await combined.lintText('export const value = 1', {
 process.stdout.write(
   JSON.stringify({
     importRuleIds: result?.messages.map((message) => message.ruleId),
+    componentRuleIds: componentResult?.messages.map(
+      (message) => message.ruleId,
+    ),
     viewRuleIds: viewResult?.messages.map((message) => message.ruleId),
     logicRuleIds: logicResult?.messages.map((message) => message.ruleId),
     featureRuleIds: featureResult?.messages.map((message) => message.ruleId),

@@ -1,6 +1,7 @@
 import type { ESLint, Linter, Rule } from 'eslint'
 import packageJson from '../package.json' with { type: 'json' }
 import featureImports from './rules/feature-imports.js'
+import componentPlacement from './rules/component-placement.js'
 import hookRendering from './rules/hook-rendering.js'
 import oneLogicPerFolder from './rules/one-logic-per-folder.js'
 import oneViewPerFolder from './rules/one-view-per-folder.js'
@@ -17,6 +18,7 @@ export interface LrsPlugin extends ESLint.Plugin {
   rules: {
     'feature-imports': Rule.RuleModule
     'hook-rendering': Rule.RuleModule
+    'component-placement': Rule.RuleModule
     'one-logic-per-folder': Rule.RuleModule
     'one-view-per-folder': Rule.RuleModule
     'presentation-imports': Rule.RuleModule
@@ -26,6 +28,7 @@ export interface LrsPlugin extends ESLint.Plugin {
   }
   configs: {
     recommended: Linter.Config[]
+    strict: Linter.Config[]
   }
 }
 
@@ -38,6 +41,7 @@ const plugin: LrsPlugin = {
   rules: {
     'one-logic-per-folder': oneLogicPerFolder,
     'one-view-per-folder': oneViewPerFolder,
+    'component-placement': componentPlacement as unknown as Rule.RuleModule,
     'hook-rendering': hookRendering as unknown as Rule.RuleModule,
     // TypeScript visitors extend ESTree; ESLint's runtime accepts these rules.
     'feature-imports': featureImports as unknown as Rule.RuleModule,
@@ -48,6 +52,7 @@ const plugin: LrsPlugin = {
   },
   configs: {
     recommended: [],
+    strict: [],
   },
 }
 
@@ -102,6 +107,15 @@ plugin.configs.recommended = [
     files: ['src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
     plugins: { lrs: plugin },
     rules: { 'lrs/utility-imports': 'error' },
+  },
+]
+
+plugin.configs.strict = [
+  {
+    name: 'lrs/component-placement',
+    files: ['src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
+    plugins: { lrs: plugin },
+    rules: { 'lrs/component-placement': 'error' },
   },
 ]
 

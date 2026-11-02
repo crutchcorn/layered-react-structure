@@ -7,6 +7,7 @@ import type { LrsConfigOptions, LrsPlugin } from 'lrs-eslint-plugin'
 type IsAny<Value> = 0 extends 1 & Value ? true : false
 const _pluginIsTyped: IsAny<typeof lrs> = false
 const _recommendedIsTyped: IsAny<typeof lrs.configs.recommended> = false
+const _strictIsTyped: IsAny<typeof lrs.configs.strict> = false
 
 const _plugin: ESLint.Plugin = lrs
 const _namedPluginType: LrsPlugin = lrs
@@ -16,12 +17,15 @@ const _presentationRule: Rule.RuleModule = lrs.rules['presentation-imports']
 const _serviceRule: Rule.RuleModule = lrs.rules['service-imports']
 const _viewRule: Rule.RuleModule = lrs.rules['one-view-per-folder']
 const _logicRule: Rule.RuleModule = lrs.rules['one-logic-per-folder']
+const _componentRule: Rule.RuleModule = lrs.rules['component-placement']
 const _recommended: Linter.Config[] = lrs.configs.recommended
+const _strict: Linter.Config[] = lrs.configs.strict
 const _application: Linter.Config[] = createLrsConfig(options)
 
 const config = defineConfig(
   { plugins: { lrs } },
   ...lrs.configs.recommended,
+  ...lrs.configs.strict,
   ...createLrsConfig({ root: '/project' }),
   {
     files: ['src/**/*.ui.tsx'],

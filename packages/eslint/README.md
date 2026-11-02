@@ -22,17 +22,20 @@ export default tseslint.config(
 
 The consumer supplies its JavaScript/TypeScript parser and JSX configuration. Paths are relative to the consuming ESLint configuration, so a frontend config in `apps/frontend` applies the rules to that application's `src` directory. The plugin does not configure or replace `no-restricted-imports`; application-specific restrictions can run alongside these rules.
 
-| Rule                       | Recommended files                                      | Disallowed behavior                                                                                                              |
-| -------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `lrs/presentation-imports` | `.ui` modules and `components/` modules under `src/`   | `services` path segments, `hooks` path segments other than `.ui` hooks, `.view` and `.logic` modules, all `@tanstack/*` packages |
-| `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | React and React DOM, `@tanstack/react-*`, `hooks` and `components` path segments, `.view`, `.ui`, and `.logic` modules           |
-| `lrs/hook-rendering`       | `src/**/hooks/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | JSX and `React.createElement` rendering in hooks                                                                                 |
-| `lrs/utility-imports`      | `src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | `components`, `hooks`, `services`, and `views` path segments, `.view`, `.ui`, and `.logic` modules, runtime React imports        |
-| `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`    | Imports that resolve into a different `views/<feature>` folder                                                                   |
-| `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`        | More than one `.view` source file in the same folder                                                                             |
-| `lrs/one-logic-per-folder` | `src/**/*.logic.ts`                                    | More than one `.logic.ts` file in the same folder                                                                                |
+| Rule                       | Scope                                                            | Disallowed behavior                                                                                                              |
+| -------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `lrs/presentation-imports` | `.ui` modules and `components/` modules under `src/`             | `services` path segments, `hooks` path segments other than `.ui` hooks, `.view` and `.logic` modules, all `@tanstack/*` packages |
+| `lrs/service-imports`      | `src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`           | React and React DOM, `@tanstack/react-*`, `hooks` and `components` path segments, `.view`, `.ui`, and `.logic` modules           |
+| `lrs/hook-rendering`       | `src/**/hooks/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`              | JSX and `React.createElement` rendering in hooks                                                                                 |
+| `lrs/utility-imports`      | `src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`              | `components`, `hooks`, `services`, and `views` path segments, `.view`, `.ui`, and `.logic` modules, runtime React imports        |
+| `lrs/feature-imports`      | `src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`              | Imports that resolve into a different `views/<feature>` folder                                                                   |
+| `lrs/component-placement`  | Strict: `src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}` | Hook declarations and non-rendering modules in component folders                                                                 |
+| `lrs/one-view-per-folder`  | `src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}`                  | More than one `.view` source file in the same folder                                                                             |
+| `lrs/one-logic-per-folder` | `src/**/*.logic.ts`                                              | More than one `.logic.ts` file in the same folder                                                                                |
 
 Presentational components may import React, plain types, utilities, constants, other presentation components, and [presentation-safe hooks](#presentation-safe-hooks). Services may import framework-independent tools such as `@tanstack/query-core`, other services, and plain types. Utilities may use type-only React contracts, but not React at runtime or application and presentation layers. Type-only imports are subject to the same layer boundaries: move shared types into a `types` module instead of importing them through a service or component.
+
+`lrs.configs.strict` is an opt-in addition to `lrs.configs.recommended`. Spread it after the recommended preset to enable `lrs/component-placement`; it does not change the recommended preset.
 
 The import rules inspect static imports, re-exports, `import()` expressions, unshadowed `require()` calls, TypeScript import types, and TypeScript import-equals declarations. String literals and template literals without expressions are checked. Component imports are recognized with or without source/output extensions, including `.view.tsx` and `.ui.js`. Directory imports such as `../services`, Windows separators, and bundler query/fragment suffixes are also recognized.
 
@@ -52,7 +55,7 @@ export default [
 
 From the repository root, run `pnpm nx test:lib lrs-eslint-plugin` for the TypeScript Vitest suite, including RuleTester, flat-configuration, and packed-package consumer tests. Nx builds the plugin first. Run `pnpm nx test:types lrs-eslint-plugin` to typecheck the source and tests, and `pnpm nx test:eslint lrs-eslint-plugin` to lint the package.
 
-The declarations cover the default plugin, `configs.recommended`, all eight rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
+The declarations cover the default plugin, `configs.recommended`, `configs.strict`, all nine rules, and `createLrsConfig`. The package also exports the `LrsPlugin` and `LrsConfigOptions` types. Strict consumer checks verify the published declarations with NodeNext and Bundler module resolution.
 
 ## Keep features independent
 
