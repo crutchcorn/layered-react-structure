@@ -1,5 +1,11 @@
 # lrs-eslint-plugin
 
+## 0.3.1
+
+### Patch Changes
+
+- 7c4311a: Allow type-only wildcard re-exports from React packages in utilities.
+
 ## 0.3.0
 
 ### Minor Changes
