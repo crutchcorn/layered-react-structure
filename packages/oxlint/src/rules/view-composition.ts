@@ -1,6 +1,9 @@
 import type { TSESLint } from '@typescript-eslint/utils'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
-const viewComposition: TSESLint.RuleModule<'styling' | 'element', []> = {
+const viewComposition: CreateOnceRule<
+  TSESLint.RuleModule<'styling' | 'element', []>
+> = {
   meta: {
     type: 'problem',
     schema: [],
@@ -11,7 +14,7 @@ const viewComposition: TSESLint.RuleModule<'styling' | 'element', []> = {
         'Views compose UI and presentational components; move DOM markup to the paired UI or a presentational component.',
     },
   },
-  create(context) {
+  createOnce(context) {
     return {
       JSXAttribute(node) {
         if (

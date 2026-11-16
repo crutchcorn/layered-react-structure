@@ -1,7 +1,8 @@
 import type { Rule } from 'eslint'
 import { checkOneFilePerFolder } from '../one-file-per-folder.js'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
-const oneLogicPerFolder: Rule.RuleModule = {
+const oneLogicPerFolder: CreateOnceRule<Rule.RuleModule> = {
   meta: {
     type: 'problem',
     docs: {
@@ -13,7 +14,7 @@ const oneLogicPerFolder: Rule.RuleModule = {
         "Only one .logic.ts file is allowed per folder. Found: {{files}}. Move logic that needs further decomposition into this folder's hooks/ directory.",
     },
   },
-  create(context) {
+  createOnce(context) {
     return checkOneFilePerFolder(context, /\.logic\.ts$/i, 'multipleLogicFiles')
   },
 }

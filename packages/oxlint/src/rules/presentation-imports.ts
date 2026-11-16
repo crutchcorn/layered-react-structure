@@ -8,6 +8,7 @@ import {
   staysInLayer,
   visitModuleSources,
 } from '../module-sources.js'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
 interface AllowEntry {
   /** Module path matched against the end of each import path; omit to match any module. */
@@ -16,13 +17,12 @@ interface AllowEntry {
   hooks?: string[]
 }
 
-interface PresentationImportsOptions {
+export interface PresentationImportsOptions {
   allow?: AllowEntry[]
 }
 
-const presentationImports: TSESLint.RuleModule<
-  'forbiddenImport',
-  [PresentationImportsOptions?]
+const presentationImports: CreateOnceRule<
+  TSESLint.RuleModule<'forbiddenImport', [PresentationImportsOptions?]>
 > = {
   meta: {
     type: 'problem',
@@ -63,36 +63,42 @@ const presentationImports: TSESLint.RuleModule<
         'Presentational components must not import "{{source}}". Receive data and actions through props; compose services, hooks, views, and TanStack dependencies outside the UI layer. Name a presentation-only hook use-*.ui.ts, or list a safe hook in this rule\'s "allow" option.',
     },
   },
-  create(context) {
-    const allow = context.options[0]?.allow ?? []
-    const directory = path.posix.dirname(context.filename.replace(/\\/g, '/'))
+  createOnce(context) {
+    let allow: AllowEntry[]
+    let directory: string
 
-    return visitModuleSources(context, (source, names) => {
-      const inLayer = (layer: string) =>
-        isLayer(source, layer) || staysInLayer(directory, source, layer)
-      const forbidden =
-        inLayer('services') ||
-        // Hooks named *.ui follow this rule themselves, so they stay presentational.
-        (inLayer('hooks') && !isComponent(source, 'ui')) ||
-        isComponent(source, 'view') ||
-        isComponent(source, 'logic') ||
-        source.startsWith('@tanstack/')
-      if (!forbidden) return false
+    return {
+      before() {
+        allow = context.options[0]?.allow ?? []
+        directory = path.posix.dirname(context.filename.replace(/\\/g, '/'))
+      },
+      ...visitModuleSources(context, (source, names) => {
+        const inLayer = (layer: string) =>
+          isLayer(source, layer) || staysInLayer(directory, source, layer)
+        const forbidden =
+          inLayer('services') ||
+          // Hooks named *.ui follow this rule themselves, so they stay presentational.
+          (inLayer('hooks') && !isComponent(source, 'ui')) ||
+          isComponent(source, 'view') ||
+          isComponent(source, 'logic') ||
+          source.startsWith('@tanstack/')
+        if (!forbidden) return false
 
-      const target = isRelative(source)
-        ? path.posix.join(directory, source)
-        : source
-      const entries = allow.filter(
-        (entry) =>
-          entry.from === undefined || endsWithSegments(target, entry.from),
-      )
-      if (entries.some((entry) => entry.hooks === undefined)) return false
-      // Side-effect imports, export *, import(), and require() take the whole module.
-      if (names === undefined) return true
-      return !names.every((name) =>
-        entries.some((entry) => entry.hooks?.includes(name)),
-      )
-    })
+        const target = isRelative(source)
+          ? path.posix.join(directory, source)
+          : source
+        const entries = allow.filter(
+          (entry) =>
+            entry.from === undefined || endsWithSegments(target, entry.from),
+        )
+        if (entries.some((entry) => entry.hooks === undefined)) return false
+        // Side-effect imports, export *, import(), and require() take the whole module.
+        if (names === undefined) return true
+        return !names.every((name) =>
+          entries.some((entry) => entry.hooks?.includes(name)),
+        )
+      }),
+    }
   },
 }
 

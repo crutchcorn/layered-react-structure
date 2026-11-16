@@ -1,10 +1,11 @@
 import type { Rule } from 'eslint'
 import { checkOneFilePerFolder } from '../one-file-per-folder.js'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
 // Match production source files, excluding colocated tests and stories.
 const viewFile = /\.view\.(?:[cm]?[jt]s|[jt]sx)$/i
 
-const oneViewPerFolder: Rule.RuleModule = {
+const oneViewPerFolder: CreateOnceRule<Rule.RuleModule> = {
   meta: {
     type: 'problem',
     docs: {
@@ -16,7 +17,7 @@ const oneViewPerFolder: Rule.RuleModule = {
         'Only one .view file is allowed per folder. Found: {{files}}. Keep orchestration in one view and extract business logic into hooks, services, or utilities.',
     },
   },
-  create(context) {
+  createOnce(context) {
     return checkOneFilePerFolder(context, viewFile, 'multipleViews')
   },
 }

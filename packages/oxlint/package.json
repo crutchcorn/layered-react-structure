@@ -1,0 +1,104 @@
+{
+  "name": "lrs-oxlint-plugin",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Oxlint rules for Layered React Structure (LRS).",
+  "keywords": [
+    "oxlint",
+    "oxlint-plugin",
+    "react",
+    "typescript",
+    "layered-react-structure",
+    "lrs",
+    "import-boundaries",
+    "project-structure"
+  ],
+  "author": {
+    "name": "Corbin Crutchley",
+    "url": "https://github.com/crutchcorn"
+  },
+  "homepage": "https://github.com/crutchcorn/layered-react-structure#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crutchcorn/layered-react-structure.git",
+    "directory": "packages/oxlint"
+  },
+  "bugs": {
+    "url": "https://github.com/crutchcorn/layered-react-structure/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "node --input-type=module -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true })\"",
+    "prepack": "pnpm run build",
+    "test:eslint": "eslint .",
+    "test:lib": "vitest run",
+    "test:types": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "oxlint": "^1.93.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@typescript-eslint/utils": "^8.71.1",
+    "eslint": "^10.12.0",
+    "oxlint": "~1.93.0",
+    "tsdown": "^0.23.0",
+    "typescript": "^6.0.2",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "~1.93.0",
+    "eslint-plugin-project-structure": "^3.14.5"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
+  "nx": {
+    "includedScripts": [
+      "build",
+      "test:eslint",
+      "test:lib",
+      "test:types"
+    ],
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      },
+      "test:lib": {
+        "dependsOn": [
+          "build",
+          "^build"
+        ],
+        "inputs": [
+          "default",
+          "^production",
+          "{workspaceRoot}/pnpm-lock.yaml"
+        ],
+        "outputs": []
+      },
+      "test:types": {
+        "dependsOn": [
+          "build",
+          "^build"
+        ]
+      }
+    }
+  }
+}

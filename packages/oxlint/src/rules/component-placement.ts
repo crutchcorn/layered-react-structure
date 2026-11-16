@@ -1,6 +1,9 @@
 import type { TSESLint } from '@typescript-eslint/utils'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
-const componentPlacement: TSESLint.RuleModule<'hook' | 'render', []> = {
+const componentPlacement: CreateOnceRule<
+  TSESLint.RuleModule<'hook' | 'render', []>
+> = {
   meta: {
     type: 'problem',
     docs: {
@@ -14,9 +17,12 @@ const componentPlacement: TSESLint.RuleModule<'hook' | 'render', []> = {
         'This component module does not render React elements. Move its hooks, utilities, constants, or contracts to the matching layer.',
     },
   },
-  create(context) {
-    let renders = false
+  createOnce(context) {
+    let renders: boolean
     return {
+      before() {
+        renders = false
+      },
       JSXElement() {
         renders = true
       },

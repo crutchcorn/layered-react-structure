@@ -9,7 +9,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { createRequire } from 'node:module'
+import { createRequire, findPackageJSON } from 'node:module'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
@@ -56,22 +56,24 @@ test('published tarball supports ESM and strict TypeScript consumers', (context)
   )
 
   // Test the actual npm artifact, without invoking build scripts or contacting npm.
-  const [packed]: PackedPackage[] = JSON.parse(
-    run(
-      'npm',
-      [
-        'pack',
-        '--ignore-scripts',
-        '--offline',
-        '--json',
-        '--cache',
-        path.join(directory, 'npm-cache'),
-        '--pack-destination',
-        directory,
-      ],
-      packageDirectory,
-    ),
-  )
+  const packResult: PackedPackage[] | Record<string, PackedPackage> =
+    JSON.parse(
+      run(
+        'npm',
+        [
+          'pack',
+          '--ignore-scripts',
+          '--offline',
+          '--json',
+          '--cache',
+          path.join(directory, 'npm-cache'),
+          '--pack-destination',
+          directory,
+        ],
+        packageDirectory,
+      ),
+    )
+  const [packed] = Object.values(packResult)
   if (!packed) expect.unreachable('npm pack must produce a package')
   const contents = packed.files.map((file) => file.path)
   for (const expected of ['dist/index.js', 'dist/index.d.ts', 'README.md']) {
@@ -107,11 +109,9 @@ test('published tarball supports ESM and strict TypeScript consumers', (context)
   })) {
     const destination = path.join(modulesDirectory, dependency)
     mkdirSync(path.dirname(destination), { recursive: true })
-    symlinkSync(
-      path.dirname(require.resolve(`${dependency}/package.json`)),
-      destination,
-      'junction',
-    )
+    const manifestPath = findPackageJSON(dependency, import.meta.url)
+    if (!manifestPath) throw new Error(`Missing package.json for ${dependency}`)
+    symlinkSync(path.dirname(manifestPath), destination, 'junction')
   }
 
   writeFileSync(

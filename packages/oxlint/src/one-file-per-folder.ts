@@ -8,11 +8,11 @@ export function checkOneFilePerFolder(
   pattern: RegExp,
   messageId: string,
 ): Rule.RuleListener {
-  const filename = path.resolve(context.cwd, context.physicalFilename)
-  if (!pattern.test(path.basename(filename))) return {}
-
   return {
     Program(node) {
+      const filename = path.resolve(context.cwd, context.physicalFilename)
+      if (!pattern.test(path.basename(filename))) return
+
       const directory = path.dirname(filename)
       // Include an editor buffer even before its file has been saved.
       const files = new Set([path.basename(filename)])
