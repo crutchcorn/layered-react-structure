@@ -1,7 +1,10 @@
 import type { TSESLint } from '@typescript-eslint/utils'
 import { isComponent, isLayer, visitModuleSources } from '../module-sources.js'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
-const serviceImports: TSESLint.RuleModule<'forbiddenImport', []> = {
+const serviceImports: CreateOnceRule<
+  TSESLint.RuleModule<'forbiddenImport', []>
+> = {
   meta: {
     type: 'problem',
     docs: {
@@ -14,7 +17,7 @@ const serviceImports: TSESLint.RuleModule<'forbiddenImport', []> = {
         'Services must not import "{{source}}". Services own I/O and resource lifetimes; keep React, hooks, views, and presentation components outside the service layer.',
     },
   },
-  create(context) {
+  createOnce(context) {
     return visitModuleSources(
       context,
       (source) =>

@@ -1,6 +1,7 @@
 import type { TSESLint } from '@typescript-eslint/utils'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
-const hookRendering: TSESLint.RuleModule<'render', []> = {
+const hookRendering: CreateOnceRule<TSESLint.RuleModule<'render', []>> = {
   meta: {
     type: 'problem',
     docs: {
@@ -12,9 +13,12 @@ const hookRendering: TSESLint.RuleModule<'render', []> = {
         'Hooks return behavior and state; render elements in components or views.',
     },
   },
-  create(context) {
+  createOnce(context) {
     const namespaces = new Set<string>()
     return {
+      before() {
+        namespaces.clear()
+      },
       ImportDeclaration(node) {
         if (node.source.value !== 'react') return
         for (const specifier of node.specifiers) {

@@ -10,6 +10,7 @@ This repository contains tools for adopting and enforcing LRS. Use them together
 | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Agent skill](skills/layered-react-structure/SKILL.md)           | Guide your coding agent when building, refactoring, or reviewing React features.                                                                                     |
 | [ESLint plugin](https://www.npmjs.com/package/lrs-eslint-plugin) | Check import boundaries, keep view features independent, limit each folder to one view and one logic file, and optionally enforce the LRS file and folder structure. |
+| [Oxlint plugin](packages/oxlint/README.md)                       | Check the same architecture rules in Oxlint.                                                                                                                         |
 
 ## Install the skill
 

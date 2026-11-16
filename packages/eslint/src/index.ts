@@ -1,21 +1,14 @@
+import { eslintCompatPlugin } from '@oxlint/plugins'
+import type { Plugin } from '@oxlint/plugins'
 import type { ESLint, Linter, Rule } from 'eslint'
 import packageJson from '../package.json' with { type: 'json' }
-import featureImports from './rules/feature-imports.js'
-import componentPlacement from './rules/component-placement.js'
-import hookRendering from './rules/hook-rendering.js'
-import noApplicationIo from './rules/no-application-io.js'
-import oneLogicPerFolder from './rules/one-logic-per-folder.js'
-import oneViewPerFolder from './rules/one-view-per-folder.js'
-import presentationImports from './rules/presentation-imports.js'
-import serviceImports from './rules/service-imports.js'
-import utilityImports from './rules/utility-imports.js'
-import viewComposition from './rules/view-composition.js'
+import { recommended, strict } from '../../oxlint/src/presets.js'
+import type { RuleScope } from '../../oxlint/src/presets.js'
+import { rules } from '../../oxlint/src/rules.js'
 import { createStructureConfig } from './structure.js'
-import type { StructureConfigOptions } from './structure.js'
+import type { StructureConfigOptions } from '../../oxlint/src/config-options.js'
 
 export type LrsConfigOptions = StructureConfigOptions
-
-const testFileIgnores = ['**/*.{test,spec,stories}.*', '**/*-test-support.*']
 
 export interface LrsPlugin extends ESLint.Plugin {
   rules: {
@@ -36,111 +29,32 @@ export interface LrsPlugin extends ESLint.Plugin {
   }
 }
 
-const plugin: LrsPlugin = {
+// The shared visitors use typescript-eslint's AST and context types.
+const plugin = eslintCompatPlugin({
   meta: {
     name: packageJson.name,
     namespace: 'lrs',
     version: packageJson.version,
   },
-  rules: {
-    'one-logic-per-folder': oneLogicPerFolder,
-    'one-view-per-folder': oneViewPerFolder,
-    'component-placement': componentPlacement as unknown as Rule.RuleModule,
-    'hook-rendering': hookRendering as unknown as Rule.RuleModule,
-    'no-application-io': noApplicationIo as unknown as Rule.RuleModule,
-    // TypeScript visitors extend ESTree; ESLint's runtime accepts these rules.
-    'feature-imports': featureImports as unknown as Rule.RuleModule,
-    'presentation-imports': presentationImports as unknown as Rule.RuleModule,
-    'service-imports': serviceImports as unknown as Rule.RuleModule,
-    'utility-imports': utilityImports as unknown as Rule.RuleModule,
-    'view-composition': viewComposition as unknown as Rule.RuleModule,
-  },
+  rules,
   configs: {
     recommended: [],
     strict: [],
   },
+} as unknown as Plugin) as unknown as LrsPlugin
+
+function createPreset(scopes: RuleScope[]): Linter.Config[] {
+  return scopes.map(({ rule, files, ...scope }) => ({
+    ...scope,
+    name: `lrs/${rule}`,
+    files,
+    plugins: { lrs: plugin },
+    rules: { [`lrs/${rule}`]: 'error' },
+  }))
 }
 
-plugin.configs.recommended = [
-  {
-    name: 'lrs/feature-imports',
-    files: ['src/**/views/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
-    ignores: testFileIgnores,
-    plugins: { lrs: plugin },
-    rules: { 'lrs/feature-imports': 'error' },
-  },
-  {
-    name: 'lrs/hook-rendering',
-    files: ['src/**/hooks/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
-    ignores: testFileIgnores,
-    plugins: { lrs: plugin },
-    rules: { 'lrs/hook-rendering': 'error' },
-  },
-  {
-    name: 'lrs/one-logic-per-folder',
-    files: ['src/**/*.logic.ts'],
-    plugins: { lrs: plugin },
-    rules: { 'lrs/one-logic-per-folder': 'error' },
-  },
-  {
-    name: 'lrs/one-view-per-folder',
-    files: ['src/**/*.view.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
-    plugins: { lrs: plugin },
-    rules: { 'lrs/one-view-per-folder': 'error' },
-  },
-  {
-    name: 'lrs/no-application-io',
-    files: [
-      'src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
-      'src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
-      'src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
-    ],
-    ignores: testFileIgnores,
-    plugins: { lrs: plugin },
-    rules: { 'lrs/no-application-io': 'error' },
-  },
-  {
-    name: 'lrs/presentation-imports',
-    files: [
-      'src/**/*.ui.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
-      'src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}',
-    ],
-    ignores: testFileIgnores,
-    plugins: { lrs: plugin },
-    rules: { 'lrs/presentation-imports': 'error' },
-  },
-  {
-    name: 'lrs/view-composition',
-    files: ['src/**/*.view.tsx'],
-    ignores: testFileIgnores,
-    plugins: { lrs: plugin },
-    rules: { 'lrs/view-composition': 'error' },
-  },
-  {
-    name: 'lrs/service-imports',
-    files: ['src/**/services/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
-    ignores: testFileIgnores,
-    plugins: { lrs: plugin },
-    rules: { 'lrs/service-imports': 'error' },
-  },
-  {
-    name: 'lrs/utility-imports',
-    files: ['src/**/utils/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
-    ignores: testFileIgnores,
-    plugins: { lrs: plugin },
-    rules: { 'lrs/utility-imports': 'error' },
-  },
-]
-
-plugin.configs.strict = [
-  {
-    name: 'lrs/component-placement',
-    files: ['src/**/components/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}'],
-    ignores: testFileIgnores,
-    plugins: { lrs: plugin },
-    rules: { 'lrs/component-placement': 'error' },
-  },
-]
+plugin.configs.recommended = createPreset(recommended)
+plugin.configs.strict = createPreset(strict)
 
 export default plugin
 

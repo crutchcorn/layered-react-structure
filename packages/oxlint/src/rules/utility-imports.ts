@@ -1,5 +1,6 @@
 import type { TSESLint, TSESTree } from '@typescript-eslint/utils'
 import { isComponent, isLayer, visitModuleSources } from '../module-sources.js'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
 function isTypeOnlyReference(node: TSESTree.Node): boolean {
   let parent = node.parent
@@ -48,7 +49,9 @@ function isReactRuntime(source: string): boolean {
   )
 }
 
-const utilityImports: TSESLint.RuleModule<'forbiddenImport', []> = {
+const utilityImports: CreateOnceRule<
+  TSESLint.RuleModule<'forbiddenImport', []>
+> = {
   meta: {
     type: 'problem',
     docs: {
@@ -61,7 +64,7 @@ const utilityImports: TSESLint.RuleModule<'forbiddenImport', []> = {
         'Utilities must not import "{{source}}". Keep application and presentation dependencies in their owning layers; type-only React contracts are allowed.',
     },
   },
-  create(context) {
+  createOnce(context) {
     return visitModuleSources(context, (source, _names, node) => {
       if (
         ['components', 'hooks', 'services', 'views'].some((layer) =>

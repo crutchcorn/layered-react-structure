@@ -1,4 +1,5 @@
 import type { TSESLint, TSESTree } from '@typescript-eslint/utils'
+import type { CreateOnceRule } from '../create-once-rule.js'
 
 const networkConstructors = new Set([
   'EventSource',
@@ -20,7 +21,7 @@ function isUnshadowedGlobal(
   return true
 }
 
-const noApplicationIo: TSESLint.RuleModule<'effect', []> = {
+const noApplicationIo: CreateOnceRule<TSESLint.RuleModule<'effect', []>> = {
   meta: {
     type: 'problem',
     docs: {
@@ -33,7 +34,7 @@ const noApplicationIo: TSESLint.RuleModule<'effect', []> = {
         'Keep network and browser-storage effects in application hooks and services; presentation and utility modules must stay effect-free.',
     },
   },
-  create(context) {
+  createOnce(context) {
     return {
       CallExpression(node) {
         if (
