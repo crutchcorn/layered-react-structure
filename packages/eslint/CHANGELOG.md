@@ -1,5 +1,11 @@
 # lrs-eslint-plugin
 
+## 0.3.2
+
+### Patch Changes
+
+- 207f781: Share the Layered React Structure rules with the Oxlint plugin through `eslintCompatPlugin` so rule updates apply to both linters.
+
 ## 0.3.1
 
 ### Patch Changes
